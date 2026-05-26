@@ -14,7 +14,7 @@ const state = {
 // IMPORTANTE: Substitua a URL abaixo pela URL real que o Render gerar para o seu Web Service!
 const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? '/api'
-  : 'https://sua-api-no-render.onrender.com/api';
+  : 'https://castock-api.onrender.com';
 
 
 // Headers comuns (Content-Type JSON padrão)
@@ -28,7 +28,7 @@ function getHeaders() {
 async function safeFetch(url, options = {}) {
   const response = await fetch(url, options);
   const contentType = response.headers.get('content-type');
-  
+
   if (response.ok) {
     if (contentType && contentType.includes('application/json')) {
       return await response.json();
@@ -54,7 +54,7 @@ function showToast(title, message, type = 'success') {
 
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
-  
+
   // Definição de Ícone SVG conforme tipo
   let iconSvg = '';
   if (type === 'success') {
@@ -74,7 +74,7 @@ function showToast(title, message, type = 'success') {
   `;
 
   container.appendChild(toast);
-  
+
   // Trigger de animação de entrada
   setTimeout(() => toast.classList.add('show'), 50);
 
@@ -132,15 +132,15 @@ async function loadProducts() {
 function renderProductsTable() {
   const tbody = document.getElementById('products-table-body');
   if (!tbody) return;
-  
+
   if (state.products.length === 0) {
     tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Nenhum produto cadastrado.</td></tr>`;
     return;
   }
-  
+
   tbody.innerHTML = state.products.map(prod => {
     let statusBadge = '';
-    
+
     if (prod.estoque === 0) {
       statusBadge = '<span class="badge badge-danger">Esgotado</span>';
     } else if (prod.estoque <= 5) {
@@ -148,9 +148,9 @@ function renderProductsTable() {
     } else {
       statusBadge = '<span class="badge badge-success">Disponível</span>';
     }
-    
+
     const formattedPrice = prod.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    
+
     return `
       <tr class="product-row" data-name="${prod.nome.toLowerCase()}">
         <td class="font-semibold">${escapeHTML(prod.nome)}</td>
@@ -181,7 +181,7 @@ function renderProductsTable() {
 function filterProductsTable() {
   const query = document.getElementById('search-products').value.toLowerCase().trim();
   const rows = document.querySelectorAll('#products-table-body .product-row');
-  
+
   rows.forEach(row => {
     const name = row.getAttribute('data-name');
     if (name.includes(query)) {
@@ -198,21 +198,21 @@ function renderProductSelectDropdown() {
     console.log('CAStock Debug: Elemento "#sale-product-select" não encontrado no DOM desta página.');
     return;
   }
-  
+
   const availableProducts = state.products.filter(prod => prod.estoque > 0);
   console.log('CAStock Debug: Produtos com estoque > 0:', availableProducts);
-  
+
   if (availableProducts.length === 0) {
     select.innerHTML = '<option value="" disabled selected>Nenhum produto disponível no estoque</option>';
     calculateSaleTotal();
     return;
   }
-  
+
   const options = availableProducts.map(prod => {
     const nameWithStock = `${prod.nome} (${prod.estoque} un - R$ ${prod.preco.toFixed(2)})`;
     return `<option value="${prod.id}" data-price="${prod.preco}" data-stock="${prod.estoque}">${escapeHTML(nameWithStock)}</option>`;
   }).join('');
-  
+
   select.innerHTML = '<option value="" disabled selected>Escolha um produto para venda...</option>' + options;
   console.log('CAStock Debug: Dropdown de vendas renderizado com sucesso.');
   calculateSaleTotal();
@@ -225,19 +225,19 @@ function renderSalesSelectionTable() {
     console.log('CAStock Debug: Elemento "#sales-selection-body" não encontrado no DOM desta página.');
     return;
   }
-  
+
   // Filtrar apenas produtos com estoque > 0
   const availableProducts = state.products.filter(prod => prod.estoque > 0);
-  
+
   if (availableProducts.length === 0) {
     tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Nenhum produto disponível no estoque para venda.</td></tr>`;
     calculatePOSTotal();
     return;
   }
-  
+
   tbody.innerHTML = availableProducts.map(prod => {
     const formattedPrice = prod.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    
+
     return `
       <tr class="pos-row" data-id="${prod.id}" data-price="${prod.preco}">
         <td class="font-semibold">${escapeHTML(prod.nome)}</td>
@@ -262,7 +262,7 @@ function renderSalesSelectionTable() {
       </tr>
     `;
   }).join('');
-  
+
   console.log('CAStock Debug: Tabela do PDV renderizada com sucesso.');
   calculatePOSTotal();
 }
@@ -270,11 +270,11 @@ function renderSalesSelectionTable() {
 function changePOSQty(prodId, step, maxStock) {
   const input = document.getElementById(`qty-${prodId}`);
   if (!input) return;
-  
+
   let val = parseInt(input.value) || 0;
   val = Math.max(0, Math.min(maxStock, val + step));
   input.value = val;
-  
+
   validatePOSQty(prodId, maxStock);
 }
 
@@ -282,7 +282,7 @@ function validatePOSQty(prodId, maxStock) {
   const input = document.getElementById(`qty-${prodId}`);
   const counter = document.getElementById(`counter-${prodId}`);
   if (!input || !counter) return;
-  
+
   let val = parseInt(input.value) || 0;
   if (val < 0) val = 0;
   if (val > maxStock) {
@@ -293,14 +293,14 @@ function validatePOSQty(prodId, maxStock) {
     input.setCustomValidity('');
   }
   input.value = val;
-  
+
   // Destaca a borda se a quantidade for maior que zero
   if (val > 0) {
     counter.classList.add('has-qty');
   } else {
     counter.classList.remove('has-qty');
   }
-  
+
   calculatePOSTotal();
 }
 
@@ -308,62 +308,62 @@ function calculatePOSTotal() {
   const rows = document.querySelectorAll('#sales-selection-body .pos-row');
   const totalDisplay = document.getElementById('checkout-total-value');
   if (!totalDisplay) return;
-  
+
   let total = 0;
-  
+
   rows.forEach(row => {
     const prodId = row.getAttribute('data-id');
     const price = parseFloat(row.getAttribute('data-price')) || 0;
     const input = document.getElementById(`qty-${prodId}`);
     const qty = input ? (parseInt(input.value) || 0) : 0;
-    
+
     total += price * qty;
   });
-  
+
   totalDisplay.textContent = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
 async function submitPOSSale() {
   const btn = document.getElementById('btn-checkout-submit');
   if (!btn) return;
-  
+
   const rows = document.querySelectorAll('#sales-selection-body .pos-row');
   const salesToCreate = [];
-  
+
   rows.forEach(row => {
     const produto_id = parseInt(row.getAttribute('data-id'));
     const input = document.getElementById(`qty-${produto_id}`);
     const quantidade = input ? (parseInt(input.value) || 0) : 0;
-    
+
     if (quantidade > 0) {
       salesToCreate.push({ produto_id, quantidade });
     }
   });
-  
+
   if (salesToCreate.length === 0) {
     showToast('Caixa Vazio', 'Selecione a quantidade de pelo menos um produto para registrar a venda.', 'warning');
     return;
   }
-  
+
   try {
     btn.disabled = true;
     btn.innerHTML = '<span>Processando...</span>';
-    
+
     // Dispara todas as requisições em paralelo via Promise.all
-    const promises = salesToCreate.map(sale => 
+    const promises = salesToCreate.map(sale =>
       safeFetch(`${API_BASE}/vendas`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(sale)
       })
     );
-    
+
     const results = await Promise.all(promises);
-    
+
     // Calcula o total consolidado de itens vendidos
     const totalItems = results.reduce((acc, cur) => acc + cur.quantidade, 0);
     showToast('Venda Efetuada!', `Caixa fechado com sucesso! ${totalItems} itens registrados.`, 'success');
-    
+
     // Recarrega todos os dados
     await refreshDashboardData();
   } catch (error) {
@@ -385,7 +385,7 @@ async function handleCreateProduct(event) {
   const preco = parseFloat(document.getElementById('prod-price').value);
   const estoque = parseInt(document.getElementById('prod-stock').value);
   const btn = document.getElementById('btn-product-submit');
-  
+
   try {
     btn.disabled = true;
     const data = await safeFetch(`${API_BASE}/produtos`, {
@@ -393,7 +393,7 @@ async function handleCreateProduct(event) {
       headers: getHeaders(),
       body: JSON.stringify({ nome, preco, estoque })
     });
-    
+
     showToast('Produto Cadastrado', `"${data.nome}" adicionado com sucesso!`, 'success');
     closeNewProductModal();
     document.getElementById('new-product-form').reset();
@@ -408,12 +408,12 @@ async function handleCreateProduct(event) {
 async function handleDeleteProduct(productId, productName) {
   const confirmed = confirm(`Tem certeza que deseja excluir o produto "${productName}"?\n\nIsso removerá o produto permanentemente e apagará qualquer histórico de vendas associado a ele.`);
   if (!confirmed) return;
-  
+
   try {
     await safeFetch(`${API_BASE}/produtos/${productId}`, {
       method: 'DELETE'
     });
-    
+
     showToast('Produto Excluído', `"${productName}" foi removido com sucesso!`, 'success');
     await refreshDashboardData();
   } catch (error) {
@@ -424,18 +424,18 @@ async function handleDeleteProduct(productId, productName) {
 async function handleRestockProduct(productId, productName) {
   const qtyStr = prompt(`Quantas unidades deseja ADICIONAR ao estoque do produto "${productName}"?`);
   if (qtyStr === null) return; // Cancelado pelo usuário
-  
+
   const qty = parseInt(qtyStr.trim());
   if (isNaN(qty) || qty <= 0) {
     showToast('Quantidade Inválida', 'Por favor, informe um número inteiro maior que zero.', 'warning');
     return;
   }
-  
+
   try {
     await safeFetch(`${API_BASE}/produtos/${productId}/adicionar-estoque?quantidade=${qty}`, {
       method: 'POST'
     });
-    
+
     showToast('Estoque Atualizado', `Adicionadas ${qty} un. ao estoque de "${productName}".`, 'success');
     await refreshDashboardData();
   } catch (error) {
@@ -456,17 +456,17 @@ async function loadSales() {
 function renderSalesTable() {
   const tbody = document.getElementById('sales-table-body');
   if (!tbody) return;
-  
+
   if (state.sales.length === 0) {
     tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Nenhuma venda registrada ainda.</td></tr>`;
     return;
   }
-  
+
   tbody.innerHTML = state.sales.map(sale => {
     const dateObj = new Date(sale.data_venda);
     const dateFormatted = dateObj.toLocaleDateString('pt-BR') + ' ' + dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     const formattedTotal = sale.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    
+
     return `
       <tr>
         <td class="text-muted font-medium">${dateFormatted}</td>
@@ -483,20 +483,20 @@ function calculateSaleTotal() {
   const qtyInput = document.getElementById('sale-quantity');
   const priceDisplay = document.getElementById('sale-unit-price');
   const totalDisplay = document.getElementById('sale-total-value');
-  
+
   if (!select || !qtyInput || !priceDisplay || !totalDisplay) return;
-  
+
   const selectedOption = select.options[select.selectedIndex];
   if (!selectedOption || select.value === "") {
     priceDisplay.textContent = 'R$ 0,00';
     totalDisplay.textContent = 'R$ 0,00';
     return;
   }
-  
+
   const unitPrice = parseFloat(selectedOption.getAttribute('data-price'));
   const stock = parseInt(selectedOption.getAttribute('data-stock'));
   const quantity = parseInt(qtyInput.value) || 0;
-  
+
   // Limitação de estoque visual
   if (quantity > stock) {
     qtyInput.setCustomValidity(`Quantidade máxima disponível: ${stock}`);
@@ -504,9 +504,9 @@ function calculateSaleTotal() {
   } else {
     qtyInput.setCustomValidity('');
   }
-  
+
   const total = unitPrice * quantity;
-  
+
   priceDisplay.textContent = unitPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   totalDisplay.textContent = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
@@ -516,15 +516,15 @@ async function handleCreateSale(event) {
   const select = document.getElementById('sale-product-select');
   const qtyInput = document.getElementById('sale-quantity');
   const btn = document.getElementById('btn-sale-submit');
-  
+
   const produto_id = parseInt(select.value);
   const qty = parseInt(qtyInput.value);
-  
+
   if (!produto_id) {
     showToast('Formulário Incompleto', 'Selecione um produto para realizar a venda.', 'warning');
     return;
   }
-  
+
   try {
     btn.disabled = true;
     const data = await safeFetch(`${API_BASE}/vendas`, {
@@ -532,7 +532,7 @@ async function handleCreateSale(event) {
       headers: getHeaders(),
       body: JSON.stringify({ produto_id, quantidade: qty })
     });
-    
+
     showToast('Venda Efetuada!', `Registrada venda de ${data.quantidade} un. de "${data.produto_nome}".`, 'success');
     document.getElementById('sale-form').reset();
     await refreshDashboardData();
@@ -562,7 +562,7 @@ function closeNewProductModal() {
 if (modal && !('closedBy' in HTMLDialogElement.prototype)) {
   modal.addEventListener('click', (event) => {
     if (event.target !== modal) return;
-    
+
     const rect = modal.getBoundingClientRect();
     const isInside = (
       rect.top <= event.clientY &&
@@ -570,7 +570,7 @@ if (modal && !('closedBy' in HTMLDialogElement.prototype)) {
       rect.left <= event.clientX &&
       event.clientX <= rect.left + rect.width
     );
-    
+
     if (!isInside) {
       modal.close();
     }
@@ -579,7 +579,7 @@ if (modal && !('closedBy' in HTMLDialogElement.prototype)) {
 
 // --- AUXILIARES ---
 function escapeHTML(str) {
-  return str.replace(/[&<>'"]/g, 
+  return str.replace(/[&<>'"]/g,
     tag => ({
       '&': '&amp;',
       '<': '&lt;',
@@ -595,12 +595,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Alerta especial de segurança caso o app seja aberto via arquivo local (file://)
   if (window.location.protocol === 'file:') {
     showToast(
-      'Acesso via Arquivo Local', 
-      'O app foi aberto diretamente pelo arquivo HTML. Por favor, acesse através do servidor (ex: http://localhost:8080/ ou http://127.0.0.1:8080/) para que as operações do banco funcionem.', 
+      'Acesso via Arquivo Local',
+      'O app foi aberto diretamente pelo arquivo HTML. Por favor, acesse através do servidor (ex: http://localhost:8080/ ou http://127.0.0.1:8080/) para que as operações do banco funcionem.',
       'warning'
     );
   }
-  
+
   // Carrega os dados operacionais do painel imediatamente no carregamento
   refreshDashboardData();
 });
