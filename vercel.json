@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "builds": [
+    {
+      "src": "static/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    { "src": "/app.js", "dest": "/static/app.js" },
+    { "src": "/style.css", "dest": "/static/style.css" },
+    { "src": "/estoque.html", "dest": "/static/estoque.html" },
+    { "src": "/historico.html", "dest": "/static/historico.html" },
+    { "src": "/(.*)", "dest": "/static/index.html" }
+  ]
+}
