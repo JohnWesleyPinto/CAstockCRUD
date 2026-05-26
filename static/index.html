@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="CAStock - Sistema inteligente e seguro para controle de estoque e registro de vendas de produtos do Centro Acadêmico.">
+  <title>CAStock - Gestão de Vendas & Estoque</title>
+  <!-- Google Fonts: Outfit e Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=2.0">
+</head>
+
+<body>
+
+  <!-- Toast Notification System (Sistema de Toasts Premium) -->
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Main Application Wrapper -->
+  <div id="app">
+
+    <!-- ==========================================
+         PAINEL PRINCIPAL (DASHBOARD)
+         ========================================== -->
+    <main id="dashboard-screen" class="screen active">
+
+      <!-- Cabeçalho (Navbar) com Abas Navegáveis -->
+      <header class="dashboard-header">
+        <div class="header-brand">
+          <svg class="brand-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+            </path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+          <span class="brand-title">CAStock</span>
+          <span class="brand-badge">Operacional</span>
+        </div>
+
+        <!-- Links de Navegação Premium -->
+        <nav class="dashboard-nav" aria-label="Menu principal">
+          <a href="/" id="tab-vendas" class="nav-tab active">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <span>Operação de Vendas</span>
+          </a>
+          <a href="/estoque.html" id="tab-estoque" class="nav-tab">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Controle de Estoque</span>
+          </a>
+          <a href="/historico.html" id="tab-historico" class="nav-tab">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Histórico de Vendas</span>
+          </a>
+        </nav>
+      </header>
+
+      <!-- Área de Páginas do Dashboard -->
+      <div class="dashboard-container">
+
+        <!-- PÁGINA: OPERAÇÃO DE VENDAS -->
+        <div id="view-vendas" class="view-vendas">
+
+          <!-- Bloco do Caixa Registradora (PDV) -->
+          <section class="card card-pdv" aria-labelledby="section-vendas">
+            <header class="card-header">
+              <div class="card-title-container">
+                <svg class="card-header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                <h2 id="section-vendas" class="card-title">Registrar Vendas (Caixa Registradora)</h2>
+              </div>
+              <p class="card-subtitle">Informe as quantidades dos itens do estoque abaixo para registrar a venda
+                consolidada.</p>
+            </header>
+
+            <!-- Tabela do PDV -->
+            <div class="table-responsive">
+              <table class="table" id="sales-selection-table">
+                <thead>
+                  <tr>
+                    <th>Nome do Produto</th>
+                    <th class="text-right">Preço Unitário</th>
+                    <th class="text-center">Estoque Disponível</th>
+                    <th class="text-center" style="width: 160px;">Quantidade desejada</th>
+                  </tr>
+                </thead>
+                <tbody id="sales-selection-body">
+                  <tr>
+                    <td colspan="4" class="text-center text-muted py-4">Nenhum produto disponível no estoque para venda.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Painel de Fechamento Inferior do Caixa -->
+            <div class="sales-checkout-bar">
+              <div class="checkout-total-container">
+                <span class="checkout-total-label">Valor Total da Venda</span>
+                <span id="checkout-total-value" class="checkout-total-value">R$ 0,00</span>
+              </div>
+              <button type="button" id="btn-checkout-submit" class="btn btn-checkout btn-primary"
+                onclick="submitPOSSale()">
+                <span>Confirmar e Registrar Venda</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </button>
+            </div>
+          </section>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js?v=2.0"></script>
+</body>
+
+</html>

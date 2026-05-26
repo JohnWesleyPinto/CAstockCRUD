@@ -1,0 +1,51 @@
+2026-05-25 21:07:03,931 [INFO] (main.py:121) - Semeadura de Banco: Usuário de teste padrão já existe. Ignorando semeadura.
+2026-05-25 21:07:03,999 [INFO] (main.py:121) - Semeadura de Banco: Usuário de teste padrão já existe. Ignorando semeadura.
+2026-05-25 21:07:13,145 [INFO] (main.py:121) - Semeadura de Banco: Usuário de teste padrão já existe. Ignorando semeadura.
+2026-05-25 21:07:13,211 [INFO] (main.py:121) - Semeadura de Banco: Usuário de teste padrão já existe. Ignorando semeadura.
+2026-05-25 21:07:25,158 [INFO] (main.py:121) - Semeadura de Banco: Usuário de teste padrão já existe. Ignorando semeadura.
+2026-05-25 21:07:25,227 [INFO] (main.py:121) - Semeadura de Banco: Usuário de teste padrão já existe. Ignorando semeadura.
+2026-05-25 21:08:10,176 [INFO] (main.py:121) - Semeadura de Banco: Usuário de teste padrão já existe. Ignorando semeadura.
+2026-05-25 21:14:49,806 [INFO] (main.py:121) - Semeadura de Banco: Usuário de teste padrão já existe. Ignorando semeadura.
+2026-05-25 21:14:49,949 [INFO] (main.py:121) - Semeadura de Banco: Usuário de teste padrão já existe. Ignorando semeadura.
+2026-05-25 21:14:51,232 [INFO] (main.py:121) - Semeadura de Banco: Usuário de teste padrão já existe. Ignorando semeadura.
+2026-05-25 21:14:51,398 [INFO] (main.py:121) - Semeadura de Banco: Usuário de teste padrão já existe. Ignorando semeadura.
+2026-05-25 21:15:55,830 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:15:55,975 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:16:36,187 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:18:54,987 [INFO] (main.py:140) - Estoque: Novo produto cadastrado: 'Teste 1' (Preço: R$ 5.5, Estoque Inicial: 12)
+2026-05-25 21:19:06,636 [INFO] (main.py:140) - Estoque: Novo produto cadastrado: 'Teste 2' (Preço: R$ 5.6, Estoque Inicial: 30)
+2026-05-25 21:20:08,833 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:20:09,002 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:20:15,264 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:20:54,314 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:20:54,344 [INFO] (main.py:81) - Semeadura de Banco: 3 produtos padrão foram semeados com sucesso no SQLite.
+2026-05-25 21:27:49,588 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:27:49,732 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:27:58,574 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:27:58,650 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:27:59,228 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:27:59,296 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:28:48,092 [INFO] (main.py:199) - Vendas: Registrada venda de 2 un. de 'Refrigerante Coca-Cola Lata' (Total: R$ 10.0)
+2026-05-25 21:33:00,522 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:33:00,695 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:33:07,565 [INFO] (main.py:167) - Estoque: Novo produto cadastrado: 'Suco de Laranja' (Preço: R$ 6.0, Estoque Inicial: 10)
+2026-05-25 21:36:46,587 [INFO] (main.py:167) - Estoque: Novo produto cadastrado: 'Teste 2' (Preço: R$ 12.3, Estoque Inicial: 20)
+2026-05-25 21:42:34,018 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:42:34,100 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:43:35,313 [INFO] (main.py:192) - Estoque: Produto 'Teste 1' (ID: 5) excluído com sucesso.
+2026-05-25 21:44:29,163 [INFO] (main.py:192) - Estoque: Produto 'Refrigerante Coca-Cola Lata' (ID: 1) excluído com sucesso.
+2026-05-25 21:49:41,834 [INFO] (main.py:238) - Vendas: Registrada venda de 2 un. de 'Salgado Assado de Frango' (Total: R$ 13.0)
+2026-05-25 21:49:41,846 [INFO] (main.py:238) - Vendas: Registrada venda de 2 un. de 'Barra de Chocolate Hersheys' (Total: R$ 9.0)
+2026-05-25 21:49:41,861 [INFO] (main.py:238) - Vendas: Registrada venda de 1 un. de 'Suco de uva' (Total: R$ 14.0)
+2026-05-25 21:49:41,882 [INFO] (main.py:238) - Vendas: Registrada venda de 2 un. de 'TEste 3' (Total: R$ 24.62)
+2026-05-25 21:49:47,123 [INFO] (main.py:238) - Vendas: Registrada venda de 2 un. de 'Suco de uva' (Total: R$ 28.0)
+2026-05-25 21:52:37,340 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:52:37,412 [INFO] (main.py:67) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 21:54:23,938 [INFO] (main.py:223) - Estoque: Adicionadas 15 un. ao produto 'Suco de Laranja' (Novo Estoque: 25)
+2026-05-25 21:55:21,987 [INFO] (main.py:223) - Estoque: Adicionadas 2 un. ao produto 'Salgado Assado de Frango' (Novo Estoque: 15)
+2026-05-25 21:55:37,421 [INFO] (main.py:269) - Vendas: Registrada venda de 2 un. de 'Teste 2' (Total: R$ 24.6)
+2026-05-25 21:55:39,408 [INFO] (main.py:269) - Vendas: Registrada venda de 3 un. de 'Suco de Laranja' (Total: R$ 18.0)
+2026-05-25 21:55:46,319 [INFO] (main.py:192) - Estoque: Produto 'Suco de uva' (ID: 4) excluído com sucesso.
+2026-05-25 22:00:14,011 [INFO] (main.py:269) - Vendas: Registrada venda de 3 un. de 'Barra de Chocolate Hersheys' (Total: R$ 13.5)
+2026-05-25 22:04:44,541 [INFO] (main.py:76) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
+2026-05-25 22:04:44,695 [INFO] (main.py:76) - Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.
