@@ -71,9 +71,10 @@ class Sale(Base):
     
     produto = relationship("Product", back_populates="vendas")
 
-# Criar tabelas se não existirem no SQLite
+# Criar tabelas se não existirem no SQLite/Postgres
 Base.metadata.create_all(bind=engine)
-logger.info("Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no SQLite.")
+db_name = "PostgreSQL (Neon)" if "postgresql" in engine.url.drivername else "SQLite"
+logger.info(f"Banco de Dados: Tabelas de produtos e vendas carregadas/inicializadas com sucesso no {db_name}.")
 
 # Semear banco de dados com produtos de teste padrão se a tabela estiver vazia
 def seed_produtos():
@@ -87,7 +88,7 @@ def seed_produtos():
             p3 = Product(nome="Barra de Chocolate Hersheys", preco=4.50, estoque=20)
             db.add_all([p1, p2, p3])
             db.commit()
-            logger.info("Semeadura de Banco: 3 produtos padrão foram semeados com sucesso no SQLite.")
+            logger.info(f"Semeadura de Banco: 3 produtos padrão foram semeados com sucesso no {db_name}.")
     except Exception as e:
         logger.error(f"Erro ao semear produtos: {e}", exc_info=True)
     finally:

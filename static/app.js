@@ -14,7 +14,8 @@ const state = {
 // IMPORTANTE: Substitua a URL abaixo pela URL real que o Render gerar para o seu Web Service!
 const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? '/api'
-  : 'https://castock-api.onrender.com';
+  : 'https://castock-api.onrender.com/api';
+
 
 
 // Headers comuns (Content-Type JSON padrão)
