@@ -1,0 +1,28 @@
+<div class="list-group space-y-2 mt-2 max-h-60 overflow-y-auto bg-white border border-slate-200 rounded-2xl p-3 shadow-premium">
+    {% for produto in produtos %}
+        <div class="flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl transition-colors border border-transparent hover:border-slate-200">
+            <div>
+                <span class="font-bold text-slate-800 block text-sm">{{ produto.nome }}</span>
+                <span class="text-xs text-indigo-700 font-mono">Custo: R$ {{ produto.custo_unitario }} | Venda: R$ {{ produto.valor_venda_final }}</span>
+                <span class="badge badge-success bg-green-50 text-green-700 border-green-200 badge-xs font-bold text-[9px] px-1.5 py-1 ml-2">Estoque: {{ produto.quantidade }} un</span>
+            </div>
+            
+            <button type="button" 
+                    @click="$dispatch('adicionar-item', { 
+                        id: '{{ produto.id }}', 
+                        nome: '{{ produto.nome }}', 
+                        preco: {{ produto.valor_venda_final }},
+                        custoUnitario: {{ produto.custo_unitario }},
+                        qtdDisponivel: {{ produto.quantidade }}
+                    })"
+                    class="btn btn-primary btn-xs rounded-lg text-[10px] uppercase font-bold px-3 py-1">
+                <i class="fa-solid fa-plus"></i> Adicionar
+            </button>
+        </div>
+    {% empty %}
+        <div class="p-3 text-slate-500 text-center text-xs">
+            <i class="fa-solid fa-face-frown mb-1 text-base block"></i>
+            Nenhum produto disponível para venda.
+        </div>
+    {% endfor %}
+</div>

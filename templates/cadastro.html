@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Cadastro de Usuário - CAStock{% endblock %}
+
+{% block auth_content %}
+<div class="w-full max-w-md mx-auto" x-data="{ animate: false }" x-init="setTimeout(() => animate = true, 100)">
+    <!-- Logotipo Superior -->
+    <div class="flex flex-col items-center mb-8 transform transition-all duration-700" :class="animate ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'">
+        <div class="w-16 h-16 rounded-2xl bg-burgundy-800 flex items-center justify-center shadow-lg shadow-burgundy-800/20 mb-3 hover:rotate-12 transition-transform duration-300">
+            <i class="fa-solid fa-cubes text-3xl text-white"></i>
+        </div>
+        <span class="text-3xl font-extrabold tracking-wider text-burgundy-800 brand-logo-text">
+            CA<span class="text-slate-800">Stock</span>
+        </span>
+        <p class="text-slate-500 text-sm mt-1">Crie sua conta operacional</p>
+    </div>
+
+    <!-- Cartão de Cadastro Glassmorphism -->
+    <div class="glass-card shadow-premium rounded-3xl p-8 transform transition-all duration-700 delay-100" 
+         :class="animate ? 'scale-100 opacity-100' : 'scale-95 opacity-0'">
+        
+        <h2 class="text-2xl font-bold text-slate-800 text-center mb-6">Cadastro de Operador</h2>
+
+        <form method="POST" action="{% url 'cadastro' %}" class="space-y-4">
+            {% csrf_token %}
+
+            <!-- Usuário -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold text-slate-600">Nome de Usuário</span>
+                </label>
+                <div class="relative flex items-center">
+                    <span class="absolute left-4 text-slate-400">
+                        <i class="fa-solid fa-user"></i>
+                    </span>
+                    <input type="text" 
+                           name="username" 
+                           placeholder="Ex: JohnDoe" 
+                           required 
+                           class="input input-bordered w-full pl-11 bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 transition-all rounded-xl text-sm" />
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold text-slate-600">E-mail</span>
+                </label>
+                <div class="relative flex items-center">
+                    <span class="absolute left-4 text-slate-400">
+                        <i class="fa-solid fa-envelope"></i>
+                    </span>
+                    <input type="email" 
+                           name="email" 
+                           placeholder="seuemail@exemplo.com" 
+                           required 
+                           class="input input-bordered w-full pl-11 bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 transition-all rounded-xl text-sm" />
+                </div>
+            </div>
+
+            <!-- Senha -->
+            <div class="form-control w-full" x-data="{ showPassword: false }">
+                <label class="label">
+                    <span class="label-text font-semibold text-slate-600">Senha</span>
+                </label>
+                <div class="relative flex items-center">
+                    <span class="absolute left-4 text-slate-400">
+                        <i class="fa-solid fa-lock"></i>
+                    </span>
+                    <input :type="showPassword ? 'text' : 'password'" 
+                           name="password" 
+                           placeholder="Crie uma senha forte" 
+                           required 
+                           class="input input-bordered w-full pl-11 pr-11 bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 transition-all rounded-xl text-sm" />
+                    <button type="button" 
+                            @click="showPassword = !showPassword" 
+                            class="absolute right-4 text-slate-400 hover:text-burgundy-800 focus:outline-none transition-colors">
+                        <i class="fa-solid" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Confirmar Senha -->
+            <div class="form-control w-full" x-data="{ showPassword: false }">
+                <label class="label">
+                    <span class="label-text font-semibold text-slate-600">Confirmar Senha</span>
+                </label>
+                <div class="relative flex items-center">
+                    <span class="absolute left-4 text-slate-400">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </span>
+                    <input :type="showPassword ? 'text' : 'password'" 
+                           name="password_confirm" 
+                           placeholder="Repita sua senha" 
+                           required 
+                           class="input input-bordered w-full pl-11 pr-11 bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 transition-all rounded-xl text-sm" />
+                    <button type="button" 
+                            @click="showPassword = !showPassword" 
+                            class="absolute right-4 text-slate-400 hover:text-burgundy-800 focus:outline-none transition-colors">
+                        <i class="fa-solid" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Botão Cadastrar -->
+            <button type="submit" class="btn btn-primary w-full mt-4 rounded-xl text-white shadow-premium hover:scale-[1.02] active:scale-[0.98] transition-all">
+                Cadastrar Conta <i class="fa-solid fa-user-plus"></i>
+            </button>
+        </form>
+
+        <div class="divider border-slate-200 my-6"></div>
+
+        <div class="text-center text-sm text-slate-500">
+            <p>Já possui uma conta? <a href="{% url 'login' %}" class="text-burgundy-800 hover:underline font-bold transition-all">Acesse aqui</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

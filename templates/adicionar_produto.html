@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Compra - CAStock{% endblock %}
+{% block page_title %}Registrar Nova Compra / Lote{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto" x-data="adicionarCompraHandler">
+    
+    <!-- Link para Voltar -->
+    <div class="mb-4">
+        <a href="{% url 'produtos' %}" class="btn btn-ghost rounded-xl text-slate-500 hover:text-burgundy-800 hover:bg-burgundy-50 transition-colors">
+            <i class="fa-solid fa-arrow-left"></i> Voltar para o Estoque
+        </a>
+    </div>
+
+    <!-- Card Principal Form -->
+    <div class="glass-card shadow-premium rounded-3xl p-8 text-slate-800">
+        
+        <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2.5 mb-6 border-b border-slate-200/60 pb-4">
+            <i class="fa-solid fa-box-open text-burgundy-800 text-2xl"></i> Detalhes da Compra do Produto
+        </h2>
+
+        <form method="POST" action="{% url 'adicionar_produto' %}" @submit.prevent="confirmarFormSubmit" class="space-y-5">
+            {% csrf_token %}
+
+            <!-- Nome do Produto -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text text-slate-600 font-semibold">Nome do Produto</span>
+                </label>
+                <input type="text" 
+                       name="nome" 
+                       required 
+                       x-model="formData.nome"
+                       placeholder="Ex: Coca-Cola Lata 350ml" 
+                       class="input input-bordered w-full bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl" />
+            </div>
+
+            <!-- Toggle Caixa vs Unitário -->
+            <div class="form-control bg-slate-50 p-4 rounded-2xl flex flex-row items-center justify-between border border-slate-100">
+                <div>
+                    <span class="font-bold text-slate-800 text-sm block">Compra em Caixa/Lote Fechado?</span>
+                    <span class="text-slate-400 text-xs">Ex: fardo ou engradado com múltiplas unidades</span>
+                </div>
+                <input type="checkbox" 
+                       class="toggle toggle-primary bg-slate-300" 
+                       x-model="formData.eh_caixa" />
+                <input type="hidden" name="eh_caixa" :value="formData.eh_caixa" />
+            </div>
+
+            <!-- Quantidades -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Qtd Comprada -->
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text text-slate-600 font-semibold" x-text="formData.eh_caixa ? 'Qtd de Caixas' : 'Qtd de Unidades'">Quantidade</span>
+                    </label>
+                    <input type="number" 
+                           name="quantidade" 
+                           required 
+                           min="1"
+                           x-model.number="formData.quantidade"
+                           class="input input-bordered w-full bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl" />
+                </div>
+
+                <!-- Unidades por Caixa (Apenas se eh_caixa) -->
+                <div class="form-control w-full" x-show="formData.eh_caixa" x-transition>
+                    <label class="label">
+                        <span class="label-text text-slate-600 font-semibold">Unidades por Caixa</span>
+                    </label>
+                    <input type="number" 
+                           name="quantidade_por_caixa" 
+                           min="1"
+                           x-model.number="formData.quantidade_por_caixa"
+                           class="input input-bordered w-full bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl" />
+                </div>
+            </div>
+
+            <!-- Custos e Margem -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Custo de Aquisição -->
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text text-slate-600 font-semibold" x-text="formData.eh_caixa ? 'Valor Pago na Caixa' : 'Valor Total do Lote'">Custo de Aquisição</span>
+                    </label>
+                    <div class="relative flex items-center">
+                        <span class="absolute left-4 text-slate-400 text-sm">R$</span>
+                        <input type="number" 
+                               name="valor_adquirido" 
+                               step="0.01" 
+                               required 
+                               x-model.number="formData.valor_adquirido"
+                               placeholder="0,00" 
+                               class="input input-bordered w-full pl-10 bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl" />
+                    </div>
+                </div>
+
+                <!-- Porcentagem de Ganho -->
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text text-slate-600 font-semibold">Margem de Lucro Desejada</span>
+                    </label>
+                    <div class="relative flex items-center">
+                        <input type="number" 
+                               name="porcentagem_ganho" 
+                               step="0.01" 
+                               required 
+                               x-model.number="formData.porcentagem_ganho"
+                               class="input input-bordered w-full pr-10 bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl" />
+                        <span class="absolute right-4 text-slate-400 text-sm">%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bloco de Cálculo em Tempo Real (UX Premium) -->
+            <div class="p-4 bg-burgundy-50 rounded-2xl border border-burgundy-100 grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="text-xs text-slate-500 font-semibold block uppercase">Custo Unitário Calculado:</span>
+                    <span class="text-lg font-bold text-burgundy-800 font-mono">
+                        R$ <span x-text="formatarDinheiro(calcularCustoUnitario())">0,00</span>
+                    </span>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-500 font-semibold block uppercase">Preço de Venda Sugerido:</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg font-bold text-emerald-600 font-mono">
+                            R$ <span x-text="formatarDinheiro(calcularPrecoSugerido())">0,00</span>
+                        </span>
+                        <button type="button" 
+                                @click="aplicarPrecoSugerido"
+                                class="badge badge-primary hover:scale-105 active:scale-95 transition-transform cursor-pointer border-none font-bold text-[10px] uppercase py-2.5 px-2 bg-burgundy-800 text-white">
+                            Aplicar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Venda Final e Data -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Preço Venda Final -->
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text text-slate-600 font-semibold">Valor de Venda Efetivo / Final</span>
+                    </label>
+                    <div class="relative flex items-center">
+                        <span class="absolute left-4 text-slate-400 text-sm">R$</span>
+                        <input type="number" 
+                               name="valor_venda_final" 
+                               step="0.01" 
+                               required 
+                               x-model.number="formData.valor_venda_final"
+                               placeholder="0,00" 
+                               class="input input-bordered w-full pl-10 bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl" />
+                    </div>
+                </div>
+
+                <!-- Data de Compra -->
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text text-slate-600 font-semibold">Data da Compra</span>
+                    </label>
+                    <input type="datetime-local" 
+                           name="data_compra" 
+                           x-model="formData.data_compra"
+                           class="input input-bordered w-full bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl text-sm" />
+                </div>
+            </div>
+
+            <!-- Box Impeditivo RF03: Verificação de Estoque Físico Antigo -->
+            <div class="bg-yellow-50 border border-yellow-200 p-5 rounded-2xl space-y-3 mt-6">
+                <h4 class="font-bold text-yellow-800 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation text-lg"></i> Alerta de Controle de Estoque Anterior
+                </h4>
+                <p class="text-xs text-yellow-700 leading-relaxed">
+                    Antes de salvar um novo fardo ou lote de mercadorias no sistema, verifique fisicamente se ainda restam produtos da compra anterior nas prateleiras para evitar duplicidades e auditorias de lucros distorcidas.
+                </p>
+                <div class="form-control flex flex-row items-start gap-3 pt-2">
+                    <input type="checkbox" id="check-confirm" class="checkbox checkbox-warning border-yellow-400 rounded bg-white mt-0.5" x-model="formData.verificado" />
+                    <label for="check-confirm" class="label cursor-pointer text-slate-700 font-semibold text-xs leading-normal py-0">
+                        Confirmo que fiz a contagem e verificação física das unidades restantes do lote anterior no estoque.
+                    </label>
+                </div>
+            </div>
+
+            <!-- Ações do Form -->
+            <div class="flex justify-between items-center pt-6 border-t border-slate-200/60 mt-8">
+                <a href="{% url 'produtos' %}" class="btn btn-ghost rounded-xl text-slate-400">Cancelar</a>
+                
+                <button type="submit" 
+                        :disabled="!formData.verificado"
+                        class="btn btn-primary px-8 rounded-xl text-white shadow-premium disabled:bg-slate-200 disabled:text-slate-400 disabled:border-slate-200 transition-all font-bold">
+                    Registrar Compra <i class="fa-solid fa-circle-check"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Script Alpine.js para Controle e Cálculos Reativos -->
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('adicionarCompraHandler', () => ({
+            formData: {
+                nome: '',
+                quantidade: 1,
+                valor_adquirido: 0,
+                porcentagem_ganho: {{ margem_global }},
+                valor_venda_final: 0,
+                eh_caixa: false,
+                quantidade_por_caixa: 30,
+                data_compra: new Date().toISOString().slice(0, 16),
+                verificado: false
+            },
+
+            calcularCustoUnitario() {
+                const total = parseFloat(this.formData.valor_adquirido) || 0;
+                if (this.formData.eh_caixa) {
+                    const un_por_caixa = parseInt(this.formData.quantidade_por_caixa) || 1;
+                    return total / un_por_caixa;
+                } else {
+                    const qtd = parseInt(this.formData.quantidade) || 0;
+                    return qtd > 0 ? total / qtd : total;
+                }
+            },
+
+            calcularPrecoSugerido() {
+                const custoUn = this.calcularCustoUnitario();
+                const margem = parseFloat(this.formData.porcentagem_ganho) || 0;
+                return custoUn * (1 + margem / 100);
+            },
+
+            aplicarPrecoSugerido() {
+                this.formData.valor_venda_final = parseFloat(this.calcularPrecoSugerido().toFixed(2));
+            },
+
+            formatarDinheiro(valor) {
+                return (parseFloat(valor) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            },
+
+            confirmarFormSubmit(e) {
+                if (this.formData.verificado) {
+                    e.target.submit();
+                } else {
+                    alert("Por favor, marque o termo de verificação de estoque anterior.");
+                }
+            }
+        }));
+    });
+</script>
+{% endblock %}

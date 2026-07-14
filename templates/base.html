@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CAStock - Gerenciamento de Estoque{% endblock %}</title>
+    
+    <!-- CDNs de CSS e Scripts -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Custom Tailwind Configurations for Rich Aesthetics -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#800020', // Burgundy Base
+                            hover: '#600018',
+                            light: '#fdf2f4',
+                        },
+                        burgundy: {
+                            50: '#fdf2f4',
+                            100: '#fbe5ea',
+                            200: '#f7ccd5',
+                            300: '#f0a3b4',
+                            400: '#e56f8a',
+                            500: '#d54366',
+                            600: '#b62649',
+                            700: '#941b37',
+                            800: '#800020', // Primary Burgundy
+                            900: '#68051d',
+                            950: '#3b000c',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(128, 0, 32, 0.08)',
+                        'premium': '0 10px 30px -10px rgba(128, 0, 32, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --primary-burgundy: #800020;
+            --primary-burgundy-hover: #600018;
+        }
+
+        /* LIGHT MODE (Alto Contraste) */
+        body {
+            background-color: #f8fafc !important;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(128, 0, 32, 0.04) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(128, 0, 32, 0.02) 0px, transparent 50%) !important;
+            background-attachment: fixed;
+            color: #0f172a !important; /* Slate-900 para contraste excelente */
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.92) !important; /* Mais opaco para legibilidade */
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border: 1px solid #cbd5e1 !important; /* Borda slate-300 visível */
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        /* Overrides de cores padrão em Light Mode para Alto Contraste */
+        .bg-slate-900, .bg-slate-950, .bg-slate-900\/60, .bg-slate-950\/80, .bg-slate-950\/40, .bg-slate-950\/60 {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+        
+        .border-slate-200, .border-slate-250, .border-slate-100, .border-slate-800, .border-slate-850, .border-slate-900\/60 {
+            border-color: #cbd5e1 !important; /* Borda escura para contraste */
+        }
+        
+        .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-800, .text-slate-900 {
+            color: #090d16 !important; /* Contraste máximo em textos */
+        }
+        
+        .text-slate-400 {
+            color: #334155 !important; /* Slate-700 */
+        }
+        
+        .text-slate-500 {
+            color: #475569 !important; /* Slate-600 */
+        }
+        
+        .hover\:bg-slate-900\/10:hover, .hover\:bg-slate-900\/30:hover, .hover\:bg-slate-50:hover {
+            background-color: #e2e8f0 !important;
+        }
+
+        /* High Contrast overrides for utility/status texts in Light Mode */
+        .text-emerald-400, .text-emerald-500, .text-green-500, .text-emerald-600, .text-green-600, .text-green-700 {
+            color: #047857 !important; /* Emerald-700 */
+        }
+        .text-amber-400, .text-amber-500, .text-yellow-500, .text-yellow-600, .text-yellow-750, .text-yellow-700, .text-yellow-800 {
+            color: #b45309 !important; /* Amber-700 */
+        }
+        .text-red-400, .text-red-500, .text-red-650, .text-red-600, .text-red-700 {
+            color: #b91c1c !important; /* Red-700 */
+        }
+
+        /* Custom Scrollbar in light theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #800020;
+        }
+
+        /* Force buttons and badges to burgundy instead of indigo */
+        .btn-primary {
+            background-color: #800020;
+            border-color: #800020;
+            color: #ffffff !important;
+        }
+        
+        .btn-primary:hover {
+            background-color: #600018;
+            border-color: #600018;
+        }
+
+        .btn-primary:disabled, .btn-primary[disabled] {
+            background-color: #cbd5e1 !important;
+            border-color: #cbd5e1 !important;
+            color: #94a3b8 !important;
+        }
+
+        .bg-indigo-600 {
+            background-color: #800020 !important;
+            color: #ffffff !important;
+        }
+        
+        .text-indigo-600, .text-indigo-500, .text-indigo-400, .text-indigo-300 {
+            color: #800020 !important;
+        }
+        
+        .border-indigo-500, .focus\:border-indigo-500:focus {
+            border-color: #800020 !important;
+        }
+        
+        .focus\:border-indigo-500:focus {
+            box-shadow: 0 0 0 1px #800020 !important;
+        }
+        
+        .shadow-indigo-500\/20, .shadow-indigo-500\/25 {
+            box-shadow: 0 4px 14px 0 rgba(128, 0, 32, 0.2) !important;
+        }
+
+        .bg-indigo-950\/40 {
+            background-color: #fdf2f4 !important;
+            color: #800020 !important;
+            border-color: #f7ccd5 !important;
+        }
+
+        /* Sidebar white styling */
+        .drawer-side .menu {
+            background-color: #ffffff;
+            border-right: 1px solid #cbd5e1;
+            color: #0f172a;
+        }
+
+        .drawer-side .menu-title {
+            color: #64748b !important;
+        }
+
+        /* Dynamic sidebar active states */
+        .drawer-side a.bg-indigo-600 {
+            background-color: #800020 !important;
+            color: #ffffff !important;
+        }
+        
+        .drawer-side a:hover {
+            background-color: #fdf2f4 !important;
+            color: #800020 !important;
+        }
+
+        /* Brand title logo styling */
+        .brand-logo-text {
+            font-weight: 800;
+            color: #800020 !important;
+        }
+    </style>
+    <script>
+        // Força o tema sempre para light
+        localStorage.setItem('theme', 'light');
+        document.documentElement.classList.remove('dark-mode');
+    </script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col antialiased bg-slate-50" 
+      x-data="authSessionManager"
+      @mousemove.window="resetTimer"
+      @keydown.window="resetTimer"
+      @click.window="resetTimer"
+      @touchstart.window="resetTimer">
+
+    <!-- Toast Notifications (Django Messages & HTMX Alerts) -->
+    <div id="toast-container" class="toast toast-top toast-end z-50">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'warning' %}alert-warning{% else %}alert-success{% endif %} shadow-lg transition-all duration-300 transform hover:scale-105"
+                     x-data="{ show: true }"
+                     x-show="show"
+                     x-init="setTimeout(() => show = false, 5000)">
+                    <div>
+                        {% if message.tags == 'error' %}
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        {% elif message.tags == 'warning' %}
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                        {% else %}
+                            <i class="fa-solid fa-circle-check"></i>
+                        {% endif %}
+                        <span>{{ message }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    {% if request.resolver_match.url_name == 'login' or request.resolver_match.url_name == 'cadastro' or request.resolver_match.url_name == 'esqueceu_senha' %}
+        <!-- Layout Centrado de Autenticação -->
+        <main class="flex-1 flex items-center justify-center p-4">
+            {% block auth_content %}{% endblock %}
+        </main>
+    {% else %}
+        <!-- Layout Geral (PDV / Administrativo) -->
+        <div class="drawer {% if user.is_authenticated %}lg:drawer-open{% endif %} flex-1">
+            <input id="sidebar-drawer" type="checkbox" class="drawer-toggle" />
+            
+            <div class="drawer-content flex flex-col min-h-screen">
+                <!-- Navbar -->
+                <header class="navbar glass-card sticky top-0 z-30 px-6 py-3 shadow-md mb-6 bg-white border-b border-slate-200">
+                    <div class="flex-none lg:hidden">
+                        {% if user.is_authenticated %}
+                            <label for="sidebar-drawer" class="btn btn-square btn-ghost text-slate-800">
+                                <i class="fa-solid fa-bars text-xl"></i>
+                            </label>
+                        {% endif %}
+                    </div>
+                    
+                    {% if user.is_authenticated %}
+                        <!-- Identificação Mobile -->
+                        <div class="flex-1 lg:hidden pl-2">
+                            <span class="text-xl font-extrabold tracking-wider text-burgundy-800 brand-logo-text">
+                                CA<span class="text-slate-850">Stock</span>
+                            </span>
+                        </div>
+                        
+                        <!-- Espaçador Desktop -->
+                        <div class="hidden lg:flex-1">
+                            <h1 class="text-xl font-medium text-slate-800">
+                                {% block page_title %}Painel de Controle{% endblock %}
+                            </h1>
+                        </div>
+                        
+                        <!-- Infos do Usuário -->
+                        <div class="flex-none gap-4">
+                            
+                            <div class="flex flex-col text-right hidden sm:flex">
+                                <span class="text-sm font-semibold text-slate-800">{{ user.username }}</span>
+                                <span class="text-xs text-indigo-400 font-medium uppercase tracking-wider">
+                                    {% if user.tipo_usuario == 'ADMIN' %}Administrador{% else %}Operador{% endif %}
+                                </span>
+                            </div>
+                            
+                            <div class="dropdown dropdown-end">
+                                {% if user.foto %}
+                                    <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar online">
+                                        <div class="rounded-full w-10 ring ring-burgundy-800 ring-offset-base-100 ring-offset-2">
+                                            <img src="{{ user.foto.url }}" alt="Avatar" class="w-full h-full object-cover" />
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar online placeholder">
+                                        <div class="bg-burgundy-800 text-white rounded-full w-10 ring ring-burgundy-800 ring-offset-base-100 ring-offset-2 flex items-center justify-center">
+                                            <span class="text-lg font-bold">{{ user.username|slice:":1"|upper }}</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                <ul tabindex="0" class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-white rounded-box w-52 border border-slate-200 text-slate-800">
+                                    <li class="menu-title text-slate-400">Opções</li>
+                                    <li><a href="{% url 'perfil' %}"><i class="fa-solid fa-user-gear text-burgundy-800"></i> Meu Perfil</a></li>
+                                    {% if user.tipo_usuario == 'ADMIN' %}
+                                        <li><a href="{% url 'configuracoes' %}"><i class="fa-solid fa-sliders text-burgundy-800"></i> Configurações</a></li>
+                                        <li><a href="{% url 'testes' %}"><i class="fa-solid fa-vial-circle-check text-burgundy-800"></i> Demonstração & Testes</a></li>
+                                    {% endif %}
+                                    <div class="divider my-1"></div>
+                                    <li><a href="{% url 'logout' %}" class="text-red-600 hover:bg-red-50"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair do Sistema</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Navbar do PDV Público (Deslogado) -->
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-burgundy-800 flex items-center justify-center shadow-lg shadow-burgundy-800/20">
+                                    <i class="fa-solid fa-cubes text-xl text-white"></i>
+                                </div>
+                                <span class="text-2xl font-extrabold tracking-wider text-burgundy-800 brand-logo-text animate-pulse">
+                                    CA<span class="text-slate-800">Stock</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex-none gap-4">
+                            
+                            <a href="{% url 'login' %}" class="btn btn-outline border-burgundy-800 text-burgundy-800 hover:bg-burgundy-800 hover:border-burgundy-800 hover:text-white rounded-xl px-5 transition-all">
+                                <i class="fa-solid fa-user-shield"></i> Entrar / Administrativo
+                            </a>
+                        </div>
+                    {% endif %}
+                </header>
+
+                <!-- Área de Conteúdo block (Definido apenas uma única vez!) -->
+                <main class="flex-1 px-4 lg:px-8 pb-12">
+                    {% block content %}{% endblock %}
+                </main>
+                
+                <!-- Footer -->
+                <footer class="footer footer-center p-4 {% if user.is_authenticated %}bg-slate-50{% else %}bg-slate-100{% endif %} text-slate-500 border-t border-slate-200 mt-auto">
+                    <aside>
+                        <p>CAStock &copy; 2026 - Desenvolvido com Antigravity</p>
+                    </aside>
+                </footer>
+            </div>
+
+            <!-- Sidebar Lateral (Menu de Navegação - Renderizado apenas para Logados) -->
+            {% if user.is_authenticated %}
+                <div class="drawer-side z-40">
+                    <label for="sidebar-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+                    <div class="menu p-4 w-72 min-h-screen bg-white text-slate-800 border-r border-slate-200 flex flex-col justify-between">
+                        
+                        <div>
+                            <!-- Logo / Título Principal -->
+                            <div class="flex items-center gap-3 px-3 py-6 mb-6">
+                                <div class="w-10 h-10 rounded-xl bg-burgundy-800 flex items-center justify-center shadow-lg shadow-burgundy-800/20">
+                                    <i class="fa-solid fa-cubes text-xl text-white"></i>
+                                </div>
+                                <span class="text-2xl font-extrabold tracking-wider text-burgundy-800 brand-logo-text">
+                                    CA<span class="text-slate-850">Stock</span>
+                                </span>
+                            </div>
+
+                            <!-- Links de Navegação -->
+                            <ul class="space-y-1.5 font-medium">
+                                {% if user.tipo_usuario == 'ADMIN' or user.permissoes.pode_visualizar_dashboard %}
+                                <li>
+                                    <a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-600/10 hover:text-indigo-400 transition-all {% if request.resolver_match.url_name == 'dashboard' %}bg-indigo-600 text-slate-100 shadow-md shadow-indigo-500/25{% endif %}">
+                                        <i class="fa-solid fa-chart-line text-lg w-5"></i> Dashboard
+                                    </a>
+                                </li>
+                                {% endif %}
+                                
+                                <li>
+                                    <a href="{% url 'vendas' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-600/10 hover:text-indigo-400 transition-all {% if request.resolver_match.url_name == 'vendas' %}bg-indigo-600 text-slate-100 shadow-md shadow-indigo-500/25{% endif %}">
+                                        <i class="fa-solid fa-cart-shopping text-lg w-5"></i> Registrar Venda
+                                    </a>
+                                </li>
+                                
+                                <li>
+                                    <a href="{% url 'produtos' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-600/10 hover:text-indigo-400 transition-all {% if request.resolver_match.url_name == 'produtos' %}bg-indigo-600 text-slate-100 shadow-md shadow-indigo-500/25{% endif %}">
+                                        <i class="fa-solid fa-boxes-stacked text-lg w-5"></i> Produtos em Estoque
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="{% url 'previsao_estoque' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-600/10 hover:text-indigo-400 transition-all {% if request.resolver_match.url_name == 'previsao_estoque' %}bg-indigo-600 text-slate-100 shadow-md shadow-indigo-500/25{% endif %}">
+                                        <i class="fa-solid fa-brain text-lg w-5"></i> Previsão Inteligente
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="{% url 'perfil' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-600/10 hover:text-indigo-400 transition-all {% if request.resolver_match.url_name == 'perfil' %}bg-indigo-600 text-slate-100 shadow-md shadow-indigo-500/25{% endif %}">
+                                        <i class="fa-solid fa-user-gear text-lg w-5"></i> Meu Perfil
+                                    </a>
+                                </li>
+
+                                {% if user.tipo_usuario == 'ADMIN' or user.permissoes.pode_gerenciar_membros %}
+                                <div class="divider border-slate-200 my-3"></div>
+                                <li class="menu-title text-xs font-bold text-slate-500 uppercase tracking-widest px-4 mb-2">Administração</li>
+                                <li>
+                                    <a href="{% url 'membros' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-600/10 hover:text-indigo-400 transition-all {% if request.resolver_match.url_name == 'membros' %}bg-indigo-600 text-slate-100 shadow-md shadow-indigo-500/25{% endif %}">
+                                        <i class="fa-solid fa-users text-lg w-5"></i> Gerenciar Membros
+                                    </a>
+                                </li>
+                                {% endif %}
+
+                                {% if user.tipo_usuario == 'ADMIN' %}
+                                <li>
+                                    <a href="{% url 'configuracoes' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-600/10 hover:text-indigo-400 transition-all {% if request.resolver_match.url_name == 'configuracoes' %}bg-indigo-600 text-slate-100 shadow-md shadow-indigo-500/25{% endif %}">
+                                        <i class="fa-solid fa-gears text-lg w-5"></i> Configurações do Sistema
+                                    </a>
+                                </li>
+                                {% endif %}
+
+                                {% if user.tipo_usuario == 'ADMIN' %}
+                                 <li>
+                                     <a href="{% url 'logs' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-600/10 hover:text-indigo-400 transition-all {% if request.resolver_match.url_name == 'logs' %}bg-indigo-600 text-slate-100 shadow-md shadow-indigo-500/25{% endif %}">
+                                         <i class="fa-solid fa-clipboard-list text-lg w-5"></i> Logs do Sistema
+                                     </a>
+                                 </li>
+                                 {% endif %}
+
+                                 {% if user.tipo_usuario == 'ADMIN' %}
+                                 <li>
+                                     <a href="{% url 'testes' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-600/10 hover:text-indigo-400 transition-all {% if request.resolver_match.url_name == 'testes' %}bg-indigo-600 text-slate-100 shadow-md shadow-indigo-500/25{% endif %}">
+                                         <i class="fa-solid fa-vial-circle-check text-lg w-5"></i> Demonstração & Testes
+                                     </a>
+                                 </li>
+                                 {% endif %}
+                            </ul>
+                        </div>
+
+                        <!-- Painel Inferior Sidebar -->
+                        <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-shield-halved text-burgundy-850"></i>
+                                <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Modo Seguro</span>
+                            </div>
+                            <span class="badge badge-success badge-xs font-bold">Ativo</span>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Modal de Inatividade por Alpine.js -->
+    <dialog id="inactivity-modal" class="modal" :class="showWarning && 'modal-open'">
+        <div class="modal-box bg-slate-900 border border-slate-800 shadow-glass">
+            <h3 class="font-bold text-lg text-warning flex items-center gap-2">
+                <i class="fa-solid fa-circle-exclamation text-2xl"></i> Alerta de Inatividade!
+            </h3>
+            <p class="py-4 text-slate-300">
+                Você ficou inativo por muito tempo. Para sua segurança operacional, sua sessão será encerrada automaticamente em:
+            </p>
+            <div class="flex justify-center my-4">
+                <div class="flex flex-col p-4 bg-slate-950/80 rounded-2xl border border-indigo-950/40 text-center w-36">
+                    <span class="text-3xl font-extrabold text-indigo-400 font-mono" x-text="timeLeft">120</span>
+                    <span class="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">segundos</span>
+                </div>
+            </div>
+            <div class="modal-action">
+                <button class="btn btn-ghost text-red-400" @click="logoutNow">Encerrar Sessão</button>
+                <button class="btn btn-primary" @click="keepAlive">Manter Conectado</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Script de Gestão de Sessão do Usuário (Inatividade) -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('authSessionManager', () => ({
+                // 30 Minutos de inatividade = 1800 Segundos
+                // Mostrar aviso nos últimos 120 segundos (2 minutos)
+                totalTime: 1800,
+                warningThreshold: 120,
+                
+                timeLeft: 120,
+                showWarning: false,
+                lastActivity: Date.now(),
+                intervalId: null,
+                isUserAuthenticated: {% if user.is_authenticated %}true{% else %}false{% endif %},
+
+                init() {
+                    if (!this.isUserAuthenticated) return;
+                    
+                    this.lastActivity = Date.now();
+                    this.intervalId = setInterval(() => {
+                        const elapsed = Math.floor((Date.now() - this.lastActivity) / 1000);
+                        const remaining = this.totalTime - elapsed;
+                        
+                        if (remaining <= 0) {
+                            this.logoutNow();
+                        } else if (remaining <= this.warningThreshold) {
+                            this.showWarning = true;
+                            this.timeLeft = remaining;
+                        } else {
+                            this.showWarning = false;
+                        }
+                    }, 1000);
+                },
+
+                resetTimer() {
+                    if (!this.isUserAuthenticated || this.showWarning) return;
+                    this.lastActivity = Date.now();
+                },
+
+                keepAlive() {
+                    // Envia um ping sutil via fetch para o servidor Django para resetar a inatividade da sessão no backend
+                    fetch('/')
+                        .then(() => {
+                            this.showWarning = false;
+                            this.lastActivity = Date.now();
+                            
+                            // Adiciona feedback visual suave
+                            const container = document.getElementById('toast-container');
+                            const alert = document.createElement('div');
+                            alert.className = 'alert alert-success shadow-lg text-sm p-3 rounded-xl transition-all duration-300';
+                            alert.innerHTML = `<div><i class="fa-solid fa-circle-check"></i><span>Sessão renovada com sucesso!</span></div>`;
+                            container.appendChild(alert);
+                            setTimeout(() => alert.remove(), 3000);
+                        })
+                        .catch(err => console.error("Erro ao renovar sessão:", err));
+                },
+
+                logoutNow() {
+                    clearInterval(this.intervalId);
+                    window.location.href = "{% url 'logout' %}";
+                }
+            }));
+        });
+    </script>
+
+    {% if user.is_authenticated %}
+    <!-- Chatbot Widget flutuante -->
+    <div x-data="{ open: false }" class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <!-- Janela de Conversa (Chat Window) -->
+        <div x-show="open" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-90 translate-y-10"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+             x-transition:leave-end="opacity-0 scale-90 translate-y-10"
+             class="card card-bordered w-80 h-[450px] bg-white text-slate-800 shadow-premium flex flex-col mb-4 border border-slate-200"
+             style="display: none;">
+            
+            <!-- Cabeçalho -->
+            <div class="p-4 bg-primary text-white flex items-center justify-between rounded-t-2xl">
+                <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse"></div>
+                    <span class="font-bold text-sm tracking-wide">CAStock Assistente</span>
+                </div>
+                <button @click="open = false" class="btn btn-ghost btn-xs btn-circle text-white hover:bg-primary-hover">✕</button>
+            </div>
+            
+            <!-- Corpo (Histórico de Conversas) -->
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto bg-slate-50 space-y-3">
+                <div class="chat chat-start">
+                    <div class="chat-header opacity-50 text-xs mb-1">Assistente</div>
+                    <div class="chat-bubble chat-bubble-secondary text-sm shadow-md">
+                        Olá! Como posso te ajudar com o estoque ou vendas hoje?
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sugestões de Perguntas Rápidas -->
+            <div class="px-3 py-2 bg-slate-50 border-t border-slate-100 flex flex-wrap gap-1.5 justify-center">
+                <button type="button" 
+                        onclick="sendSuggestedQuestion('Produtos acabando?')" 
+                        class="btn btn-outline btn-xs border-primary text-primary hover:bg-primary hover:text-white rounded-full font-bold transition-all text-[10px]">
+                    📉 Estoque Crítico
+                </button>
+                <button type="button" 
+                        onclick="sendSuggestedQuestion('Faturamento de hoje')" 
+                        class="btn btn-outline btn-xs border-primary text-primary hover:bg-primary hover:text-white rounded-full font-bold transition-all text-[10px]">
+                    💰 Faturamento
+                </button>
+                <button type="button" 
+                        onclick="sendSuggestedQuestion('Buscar Coca Cola')" 
+                        class="btn btn-outline btn-xs border-primary text-primary hover:bg-primary hover:text-white rounded-full font-bold transition-all text-[10px]">
+                    🔍 Buscar Coca
+                </button>
+            </div>
+            
+            <!-- Rodapé (Formulário de Entrada) -->
+            <form id="chatbot-form"
+                  hx-post="{% url 'chatbot_send' %}" 
+                  hx-target="#bot-loading-indicator" 
+                  hx-swap="outerHTML" 
+                  onsubmit="prepareChatBubble();"
+                  class="p-3 border-t border-slate-200 bg-white flex gap-2 rounded-b-2xl">
+                {% csrf_token %}
+                <input name="message" type="text" placeholder="Pergunte ao bot..." class="input input-bordered input-sm flex-1 bg-slate-50 text-slate-800 placeholder-slate-400 border-slate-200 focus:outline-none focus:border-primary" required />
+                <button type="submit" class="btn btn-primary btn-sm px-4">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Botão Principal de Ativação -->
+        <button @click="open = !open" 
+                class="btn btn-circle btn-primary btn-lg shadow-premium transform hover:scale-110 active:scale-95 transition-all">
+            <i class="fa-solid text-xl" :class="open ? 'fa-xmark' : 'fa-robot'"></i>
+        </button>
+    </div>
+    
+    <script>
+        function sendSuggestedQuestion(text) {
+            const form = document.getElementById('chatbot-form');
+            if (form) {
+                const input = form.querySelector('input[name="message"]');
+                input.value = text;
+                // Executa form.requestSubmit() para rodar validação e disparar HTMX
+                if (typeof form.requestSubmit === 'function') {
+                    form.requestSubmit();
+                } else {
+                    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }
+            }
+        }
+
+        function prepareChatBubble() {
+            const form = document.getElementById('chatbot-form');
+            if (!form) return;
+            const input = form.querySelector('input[name="message"]');
+            const msg = input.value.trim();
+            if (msg) {
+                const chatMessages = document.getElementById('chat-messages');
+                
+                // Remove antigo indicador se houver algum
+                const oldIndicator = document.getElementById('bot-loading-indicator');
+                if (oldIndicator) oldIndicator.remove();
+
+                // Append user bubble
+                const userBubble = document.createElement('div');
+                userBubble.className = 'chat chat-end mb-3';
+                userBubble.innerHTML = '<div class="chat-header opacity-50 text-xs mb-1">Você</div><div class="chat-bubble chat-bubble-primary text-sm shadow-md">' + escapeHTML(msg) + '</div>';
+                chatMessages.appendChild(userBubble);
+
+                // Append loading bubble
+                const loadingBubble = document.createElement('div');
+                loadingBubble.className = 'chat chat-start mb-3';
+                loadingBubble.id = 'bot-loading-indicator';
+                loadingBubble.innerHTML = '<div class="chat-header opacity-50 text-xs mb-1">Assistente</div><div class="chat-bubble chat-bubble-secondary text-sm shadow-md flex items-center gap-1.5 py-3"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style="animation-delay: 0ms"></span><span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style="animation-delay: 150ms"></span><span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style="animation-delay: 300ms"></span></div>';
+                chatMessages.appendChild(loadingBubble);
+                
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Reset do input com delay leve para garantir que HTMX já tenha lido/serializado o payload
+                setTimeout(() => { input.value = ''; }, 30);
+            }
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        // Event listener nativo para scroll suave após a resposta do HTMX
+        document.addEventListener('htmx:afterRequest', function(evt) {
+            if (evt.detail.elt && evt.detail.elt.id === 'chatbot-form') {
+                const chatMessages = document.getElementById('chat-messages');
+                if (chatMessages) {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

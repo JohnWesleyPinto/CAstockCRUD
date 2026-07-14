@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciar Membros - CAStock{% endblock %}
+{% block page_title %}Gestão de Membros & Permissões{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+    
+    <!-- Painel Lateral: Novo Membro -->
+    <div class="xl:col-span-1">
+        <div class="glass-card shadow-glass rounded-3xl p-6 sticky top-24">
+            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 mb-6">
+                <i class="fa-solid fa-user-plus text-indigo-500"></i> Novo Operador
+            </h2>
+            
+            <form method="POST" action="{% url 'membros' %}" class="space-y-4">
+                {% csrf_token %}
+                
+                <div class="form-control w-full">
+                    <label class="label pb-1">
+                        <span class="label-text text-slate-700 font-bold">Nome de Usuário</span>
+                    </label>
+                    <input type="text" 
+                           name="username" 
+                           placeholder="Ex: operador_loja" 
+                           required 
+                           class="input input-bordered w-full bg-white border-slate-300 text-slate-800 focus:border-burgundy-850 focus:ring-1 focus:ring-burgundy-850 transition-all rounded-xl" />
+                </div>
+                
+                <div class="form-control w-full">
+                    <label class="label pb-1">
+                        <span class="label-text text-slate-700 font-bold">E-mail</span>
+                    </label>
+                    <input type="email" 
+                           name="email" 
+                           placeholder="Ex: operador@loja.com" 
+                           required 
+                           class="input input-bordered w-full bg-white border-slate-300 text-slate-800 focus:border-burgundy-850 focus:ring-1 focus:ring-burgundy-850 transition-all rounded-xl" />
+                </div>
+                
+                <div class="form-control w-full">
+                    <label class="label pb-1">
+                        <span class="label-text text-slate-700 font-bold">Senha Inicial</span>
+                    </label>
+                    <input type="password" 
+                           name="password" 
+                           placeholder="Mínimo 6 caracteres" 
+                           required 
+                           class="input input-bordered w-full bg-white border-slate-300 text-slate-800 focus:border-burgundy-850 focus:ring-1 focus:ring-burgundy-850 transition-all rounded-xl" />
+                </div>
+
+                <div class="form-control w-full">
+                    <label class="label pb-1">
+                        <span class="label-text text-slate-700 font-bold">Perfil de Acesso</span>
+                    </label>
+                    <select name="tipo_usuario" class="select select-bordered w-full bg-white border-slate-300 text-slate-800 focus:border-burgundy-850 rounded-xl">
+                        <option value="MEMBRO" selected>Membro Operacional (Acesso restrito)</option>
+                        <option value="ADMIN">Administrador (Acesso irrestrito)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-full mt-4 rounded-xl text-white shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all">
+                    Cadastrar Membro <i class="fa-solid fa-check"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela Principal: Lista de Membros e Toggles de Permissões -->
+    <div class="xl:col-span-2">
+        <div class="glass-card shadow-glass rounded-3xl p-6">
+            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 mb-6">
+                <i class="fa-solid fa-users text-indigo-500"></i> Membros Ativos e Permissões Dinâmicas
+            </h2>
+
+            <div class="overflow-x-auto w-full">
+                <table class="table table-zebra w-full text-slate-800">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-slate-600">
+                            <th class="bg-transparent font-bold">Membro</th>
+                            <th class="bg-transparent font-bold text-center">Dashboard</th>
+                            <th class="bg-transparent font-bold text-center">Vendas</th>
+                            <th class="bg-transparent font-bold text-center">Produtos (C/E)</th>
+                            <th class="bg-transparent font-bold text-center">Excluir Prod.</th>
+                            <th class="bg-transparent font-bold text-center">Lucro Global</th>
+                            <th class="bg-transparent font-bold text-center">Membros</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for membro in membros %}
+                            <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                                <!-- Info Membro -->
+                                <td class="bg-transparent">
+                                    <div class="flex items-center gap-3">
+                                        <div class="avatar placeholder">
+                                            <div class="bg-slate-100 text-indigo-700 rounded-xl w-10 h-10 border border-slate-200 font-bold flex items-center justify-center">
+                                                <span>{{ membro.username|slice:":2"|upper }}</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-slate-800">{{ membro.username }}</div>
+                                            <span class="badge {% if membro.tipo_usuario == 'ADMIN' %}badge-indigo bg-indigo-50 text-indigo-700 border-indigo-200{% else %}badge-neutral bg-slate-100 text-slate-600 border-slate-200{% endif %} badge-sm font-semibold uppercase tracking-wider mt-1">
+                                                {% if membro.tipo_usuario == 'ADMIN' %}Admin{% else %}Operador{% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Se o membro for admin, tem permissão total inalterável pela interface -->
+                                {% if membro.tipo_usuario == 'ADMIN' %}
+                                    <td colspan="6" class="bg-transparent text-center py-4">
+                                        <span class="text-xs text-indigo-700 font-bold uppercase tracking-widest bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-200">
+                                            <i class="fa-solid fa-shield-halved"></i> Permissão Total de Administrador
+                                        </span>
+                                    </td>
+                                {% else %}
+                                    <!-- Permissões Granulares via HTMX Toggles -->
+                                    
+                                    <!-- Visualizar Dashboard -->
+                                    <td class="bg-transparent text-center">
+                                        <input type="checkbox" 
+                                               class="toggle toggle-primary toggle-sm"
+                                               {% if membro.permissoes.pode_visualizar_dashboard %}checked{% endif %}
+                                               hx-post="{% url 'atualizar_permissao' membro.id 'pode_visualizar_dashboard' %}"
+                                               hx-trigger="change"
+                                               hx-swap="none" />
+                                    </td>
+
+                                    <!-- Cadastrar Venda -->
+                                    <td class="bg-transparent text-center">
+                                        <input type="checkbox" 
+                                               class="toggle toggle-primary toggle-sm"
+                                               {% if membro.permissoes.pode_cadastrar_venda %}checked{% endif %}
+                                               hx-post="{% url 'atualizar_permissao' membro.id 'pode_cadastrar_venda' %}"
+                                               hx-trigger="change"
+                                               hx-swap="none" />
+                                    </td>
+
+                                    <!-- Cadastrar/Editar Produto -->
+                                    <td class="bg-transparent text-center">
+                                        <input type="checkbox" 
+                                               class="toggle toggle-primary toggle-sm"
+                                               {% if membro.permissoes.pode_cadastrar_produto %}checked{% endif %}
+                                               hx-post="{% url 'atualizar_permissao' membro.id 'pode_cadastrar_produto' %}"
+                                               hx-trigger="change"
+                                               hx-swap="none" />
+                                    </td>
+
+                                    <!-- Excluir Produto -->
+                                    <td class="bg-transparent text-center">
+                                        <input type="checkbox" 
+                                               class="toggle toggle-primary toggle-sm"
+                                               {% if membro.permissoes.pode_excluir_produto %}checked{% endif %}
+                                               hx-post="{% url 'atualizar_permissao' membro.id 'pode_excluir_produto' %}"
+                                               hx-trigger="change"
+                                               hx-swap="none" />
+                                    </td>
+
+                                    <!-- Alterar Lucro Global -->
+                                    <td class="bg-transparent text-center">
+                                        <input type="checkbox" 
+                                               class="toggle toggle-primary toggle-sm"
+                                               {% if membro.permissoes.pode_alterar_porcentagem_lucro %}checked{% endif %}
+                                               hx-post="{% url 'atualizar_permissao' membro.id 'pode_alterar_porcentagem_lucro' %}"
+                                               hx-trigger="change"
+                                               hx-swap="none" />
+                                    </td>
+
+                                    <!-- Gerenciar Membros -->
+                                    <td class="bg-transparent text-center">
+                                        <input type="checkbox" 
+                                               class="toggle toggle-primary toggle-sm"
+                                               {% if membro.permissoes.pode_gerenciar_membros %}checked{% endif %}
+                                               hx-post="{% url 'atualizar_permissao' membro.id 'pode_gerenciar_membros' %}"
+                                               hx-trigger="change"
+                                               hx-swap="none" />
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-8 text-slate-500">
+                                    <i class="fa-solid fa-users-slash text-4xl mb-3 block"></i>
+                                    Nenhum membro cadastrado além de você.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - CAStock{% endblock %}
+{% block page_title %}Painel Executivo{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="{ periodo: 'mes' }">
+    
+    <!-- Filtros de Período Administrativos -->
+    <div class="glass-card shadow-glass rounded-3xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div>
+            <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-indigo-500"></i> Desempenho e Indicadores
+            </h2>
+            <p class="text-xs text-slate-400">Dados consolidados do caixa operacional e produtos</p>
+        </div>
+        
+        <!-- Grupo de Botões HTMX -->
+        <div class="join bg-slate-900 border border-slate-850 p-1 rounded-2xl">
+            <!-- Semana -->
+            <button class="btn btn-xs sm:btn-sm join-item rounded-xl px-4 font-bold border-none transition-all"
+                    :class="periodo === 'semana' ? 'btn-primary text-slate-100 shadow-md shadow-indigo-500/20' : 'btn-ghost text-slate-400'"
+                    @click="periodo = 'semana'"
+                    hx-get="{% url 'dashboard_metrics' %}?periodo=semana"
+                    hx-target="#dashboard-metrics-container"
+                    hx-trigger="click">
+                Semana
+            </button>
+            
+            <!-- Mês -->
+            <button class="btn btn-xs sm:btn-sm join-item rounded-xl px-4 font-bold border-none transition-all"
+                    :class="periodo === 'mes' ? 'btn-primary text-slate-100 shadow-md shadow-indigo-500/20' : 'btn-ghost text-slate-400'"
+                    @click="periodo = 'mes'"
+                    hx-get="{% url 'dashboard_metrics' %}?periodo=mes"
+                    hx-target="#dashboard-metrics-container"
+                    hx-trigger="click">
+                Mês
+            </button>
+            
+            <!-- Trimestre -->
+            <button class="btn btn-xs sm:btn-sm join-item rounded-xl px-4 font-bold border-none transition-all"
+                    :class="periodo === 'trimestre' ? 'btn-primary text-slate-100 shadow-md shadow-indigo-500/20' : 'btn-ghost text-slate-400'"
+                    @click="periodo = 'trimestre'"
+                    hx-get="{% url 'dashboard_metrics' %}?periodo=trimestre"
+                    hx-target="#dashboard-metrics-container"
+                    hx-trigger="click">
+                Trimestre
+            </button>
+
+            <!-- Todos -->
+            <button class="btn btn-xs sm:btn-sm join-item rounded-xl px-4 font-bold border-none transition-all"
+                    :class="periodo === 'todos' ? 'btn-primary text-slate-100 shadow-md shadow-indigo-500/20' : 'btn-ghost text-slate-400'"
+                    @click="periodo = 'todos'"
+                    hx-get="{% url 'dashboard_metrics' %}?periodo=todos"
+                    hx-target="#dashboard-metrics-container"
+                    hx-trigger="click">
+                Histórico Geral
+            </button>
+        </div>
+    </div>
+
+    <!-- Container Dinâmico onde o HTMX carregará os dados do Dashboard -->
+    <div id="dashboard-metrics-container" 
+         hx-get="{% url 'dashboard_metrics' %}?periodo=mes" 
+         hx-trigger="load"
+         class="min-h-[400px] flex items-center justify-center">
+        <!-- Loader inicial de alta fidelidade visual -->
+        <div class="flex flex-col items-center gap-3">
+            <span class="loading loading-ring loading-lg text-indigo-500"></span>
+            <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">Carregando métricas...</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

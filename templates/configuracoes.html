@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Configurações do Sistema - CAStock{% endblock %}
+{% block page_title %}Configurações do Sistema{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <!-- Cartão Geral -->
+    <div class="glass-card shadow-premium rounded-3xl p-8 text-slate-800">
+        
+        <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2.5 mb-6 border-b border-slate-200/60 pb-4">
+            <i class="fa-solid fa-sliders text-burgundy-800 text-2xl"></i> Parâmetros Operacionais
+        </h2>
+
+        <!-- Box Visual com Margem Atual -->
+        <div class="p-6 bg-burgundy-50 border border-burgundy-100 rounded-2xl flex items-center justify-between gap-4 mb-6">
+            <div>
+                <span class="text-xs text-slate-500 font-bold block uppercase tracking-wider">Margem de Lucro Sugerida Atual</span>
+                <span class="text-xs text-slate-400 block mt-0.5">Sugestão global de preenchimento para novos lotes.</span>
+            </div>
+            <div class="text-3xl font-black text-burgundy-800 font-mono flex items-center">
+                <span>{{ config.margem_lucro_padrao }}</span><span class="text-xl ml-0.5">%</span>
+            </div>
+        </div>
+
+        <form method="POST" action="{% url 'configuracoes' %}" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Parâmetro de Margem Global -->
+            <div class="form-control w-full">
+                <label class="label py-1">
+                    <span class="label-text text-slate-600 font-semibold">Nova Margem de Lucro Padrão</span>
+                </label>
+                <div class="relative flex items-center">
+                    <input type="number" 
+                           name="margem_lucro_padrao" 
+                           step="0.01" 
+                           min="0"
+                           max="1000"
+                           required 
+                           value="{{ config.margem_lucro_padrao }}"
+                           placeholder="Digite a porcentagem" 
+                           class="input input-bordered w-full pr-10 bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl" />
+                    <span class="absolute right-4 text-slate-400 font-bold">%</span>
+                </div>
+                <span class="label-text-alt text-slate-400 mt-2 leading-relaxed block">
+                    <i class="fa-solid fa-circle-info text-burgundy-800/80 mr-0.5"></i>
+                    Esta porcentagem de lucro é aplicada de forma global como sugestão em tempo real sempre que um operador cadastrar uma nova compra de produtos via página dedicada. Ela pode ser ajustada individualmente a qualquer momento.
+                </span>
+            </div>
+
+            <!-- Chave de API do Gemini -->
+            <div class="form-control w-full mt-6">
+                <label class="label py-1">
+                    <span class="label-text text-slate-600 font-semibold">Chave de API do Gemini</span>
+                </label>
+                <div class="relative flex items-center">
+                    <input type="password" 
+                           name="gemini_api_key" 
+                           value="{{ config.gemini_api_key|default:'' }}"
+                           placeholder="Cole sua chave de API (AI Studio)" 
+                           class="input input-bordered w-full pr-10 bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl" />
+                    <button type="button" onclick="togglePasswordVisibility(this)" class="absolute right-4 text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                </div>
+                <span class="label-text-alt text-slate-400 mt-2 leading-relaxed block">
+                    <i class="fa-solid fa-circle-info text-burgundy-800/80 mr-0.5"></i>
+                    Usada para alimentar a inteligência avançada do chatbot de estoque. Se deixada vazia, o sistema usará a chave definida nas variáveis de ambiente (.env) ou executará em Modo de Simulação Local.
+                </span>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="flex justify-end pt-4 border-t border-slate-200/60 mt-8">
+                <button type="submit" class="btn btn-primary px-8 rounded-xl text-white shadow-premium font-bold flex items-center gap-2">
+                    Salvar Configurações <i class="fa-solid fa-circle-check"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function togglePasswordVisibility(btn) {
+        const input = btn.previousElementSibling;
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
+{% endblock %}

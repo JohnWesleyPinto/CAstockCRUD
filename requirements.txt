@@ -1,0 +1,5 @@
+Django>=5.0
+argon2-cffi
+django-decouple
+psycopg2-binary
+google-generativeai

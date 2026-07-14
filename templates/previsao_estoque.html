@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Previsão Inteligente de Estoque - CAStock{% endblock %}
+
+{% block content %}
+<div class="space-y-8 animate-fade-in">
+    <!-- Cabeçalho Principal -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-200/60 pb-6">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-850 tracking-tight flex items-center gap-3">
+                Previsão de Estoque <span class="badge badge-primary text-white rounded-md font-semibold px-2 py-3 text-xs">Cadeias de Markov</span>
+            </h1>
+            <p class="text-slate-500 mt-1 text-sm">
+                Análise preditiva e simulação de Monte Carlo com base no histórico de transições de vendas diárias.
+            </p>
+        </div>
+        
+        <!-- Seletor de Produto -->
+        <form method="GET" action="{% url 'previsao_estoque' %}" class="flex items-center gap-2">
+            <select name="produto_id" onchange="this.form.submit()" class="select select-bordered bg-white text-slate-800 border-slate-200 focus:border-burgundy-850 focus:ring-1 focus:ring-burgundy-850 rounded-xl font-medium w-64 shadow-sm">
+                {% for prod in produtos %}
+                    <option value="{{ prod.id }}" {% if prod.id == produto_selecionado.id %}selected{% endif %}>
+                        {{ prod.nome }} (Atual: {{ prod.quantidade }} un)
+                    </option>
+                {% empty %}
+                    <option>Nenhum produto cadastrado</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    {% if resultado %}
+    <!-- Cards de Métricas Preditoras -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <!-- Estoque Atual -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-premium flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-650">
+                <i class="fa-solid fa-boxes-stacked text-xl"></i>
+            </div>
+            <div>
+                <span class="text-xs text-slate-400 font-semibold block uppercase tracking-wider">Estoque Atual</span>
+                <span class="text-2xl font-bold text-slate-800">{{ resultado.estoque_atual }} un</span>
+            </div>
+        </div>
+
+        <!-- Probabilidade de Ruptura -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-premium flex items-center gap-4">
+            {% with prob=resultado.probabilidade_ruptura|last %}
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center 
+                 {% if prob > 70 %}bg-rose-50 text-rose-600{% elif prob > 30 %}bg-amber-50 text-amber-600{% else %}bg-emerald-50 text-emerald-600{% endif %}">
+                <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+            </div>
+            <div>
+                <span class="text-xs text-slate-400 font-semibold block uppercase tracking-wider">Risco de Ruptura (7d)</span>
+                <span class="text-2xl font-bold {% if prob > 70 %}text-rose-600{% elif prob > 30 %}text-amber-600{% else %}text-emerald-600{% endif %}">{{ prob }}%</span>
+            </div>
+            {% endwith %}
+        </div>
+
+        <!-- Média de Demanda Estimada -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-premium flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <i class="fa-solid fa-calculator text-xl"></i>
+            </div>
+            <div>
+                <span class="text-xs text-slate-400 font-semibold block uppercase tracking-wider">Venda Diária Média</span>
+                <span class="text-2xl font-bold text-slate-800">
+                    {{ resultado.demanda_media_diaria }} un/dia
+                </span>
+            </div>
+        </div>
+
+        <!-- Previsão de Esgotamento -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-premium flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center 
+                 {% if resultado.dia_estimado_ruptura is not None %}bg-rose-50 text-rose-600{% else %}bg-emerald-50 text-emerald-600{% endif %}">
+                <i class="fa-solid fa-hourglass-half text-xl"></i>
+            </div>
+            <div>
+                <span class="text-xs text-slate-400 font-semibold block uppercase tracking-wider">Tempo de Vida</span>
+                <span class="text-xl font-bold text-slate-800">
+                    {% if resultado.dia_estimado_ruptura is not None %}
+                        Esgota em {{ resultado.dia_estimado_ruptura }} dias
+                    {% else %}
+                        Seguro (&gt; 7 dias)
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção de Projeções e Gráficos -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Gráfico de Ruína / Declinio do Estoque -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-premium lg:col-span-2 flex flex-col justify-between">
+            <div>
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-area text-indigo-500"></i> Projeção de Estoque (Próximos 7 dias)
+                </h3>
+                <p class="text-slate-400 text-xs mt-1">Evolução média simulada via Monte Carlo a partir do estado atual.</p>
+            </div>
+            
+            <div class="h-64 mt-6">
+                <canvas id="stockProjectionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Matriz de Transição de Markov (Probabilidade) -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-premium flex flex-col justify-between">
+            <div>
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-table-cells text-indigo-500"></i> Matriz de Markov
+                </h3>
+                <p class="text-slate-400 text-xs mt-1">Probabilidade de transição de demanda para o dia seguinte.</p>
+            </div>
+
+            <div class="overflow-x-auto mt-6">
+                <table class="table w-full text-center border-collapse">
+                    <thead>
+                        <tr class="text-xs uppercase text-slate-500 border-b border-slate-100">
+                            <th>De / Para</th>
+                            <th>Nenhuma</th>
+                            <th>Baixa</th>
+                            <th>Alta</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm font-medium">
+                        <!-- Linha Estado 0 (Nenhuma) -->
+                        <tr class="border-b border-slate-50">
+                            <td class="text-xs font-semibold text-slate-500 bg-slate-50/50 uppercase">Nenhuma</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.0.0 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.0.0 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.0.1 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.0.1 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.0.2 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.0.2 }}%</td>
+                        </tr>
+                        <!-- Linha Estado 1 (Baixa) -->
+                        <tr class="border-b border-slate-50">
+                            <td class="text-xs font-semibold text-slate-500 bg-slate-50/50 uppercase">Baixa</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.1.0 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.1.0 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.1.1 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.1.1 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.1.2 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.1.2 }}%</td>
+                        </tr>
+                        <!-- Linha Estado 2 (Alta) -->
+                        <tr class="border-b border-slate-50">
+                            <td class="text-xs font-semibold text-slate-500 bg-slate-50/50 uppercase">Alta</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.2.0 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.2.0 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.2.1 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.2.1 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.2.2 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.2.2 }}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <span class="text-[10px] text-slate-400 block text-center mt-2 leading-relaxed">
+                *Cores mais intensas indicam maiores probabilidades de transição de estado.
+            </span>
+        </div>
+    </div>
+
+    <!-- Recomendações e Lote Sugerido -->
+    <div class="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-premium flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-burgundy-50 text-burgundy-850 flex items-center justify-center text-2xl shadow-inner">
+                <i class="fa-solid fa-lightbulb"></i>
+            </div>
+            <div>
+                <h4 class="text-lg font-bold text-slate-850">Ação Recomendada (Inteligência Artificial)</h4>
+                <p class="text-slate-500 text-sm mt-0.5">
+                    {% if resultado.sugestao_compra > 0 %}
+                        O modelo Markov identificou risco de ruptura de estoque no curto prazo. 
+                        Recomendamos reabastecer o estoque o quanto antes.
+                    {% else %}
+                        O nível do estoque atual é suficiente para atender a demanda dos próximos 7 dias. Nenhuma compra imediata é recomendada.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <div class="text-center md:text-right">
+            <span class="text-xs text-slate-400 font-semibold block uppercase tracking-wider">Lote de Reabastecimento Sugerido</span>
+            <span class="text-3xl font-black text-burgundy-850 block mt-1">
+                {% if resultado.sugestao_compra > 0 %}
+                    + {{ resultado.sugestao_compra }} un
+                {% else %}
+                    Sem necessidade
+                {% endif %}
+            </span>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Biblioteca Chart.js para renderização do gráfico de linha -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('stockProjectionChart').getContext('2d');
+        
+        // Dados vindos do Django
+        const projecaoEstoque = {{ resultado.projecao_estoque|safe }};
+        const probRuptura = {{ resultado.probabilidade_ruptura|safe }};
+        const labels = ['Hoje', 'Dia 1', 'Dia 2', 'Dia 3', 'Dia 4', 'Dia 5', 'Dia 6', 'Dia 7'];
+        
+        // Configuração de Gradiente para a linha de Projeção
+        const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+        gradient.addColorStop(0, 'rgba(128, 0, 32, 0.25)');
+        gradient.addColorStop(1, 'rgba(128, 0, 32, 0.0)');
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Nível Médio Projetado',
+                        data: projecaoEstoque,
+                        borderColor: '#800020',
+                        borderWidth: 3,
+                        backgroundColor: gradient,
+                        fill: true,
+                        tension: 0.3,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Risco de Ruptura (%)',
+                        data: probRuptura,
+                        borderColor: 'rgba(239, 68, 68, 0.65)',
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        backgroundColor: 'transparent',
+                        pointStyle: 'rectRot',
+                        tension: 0.1,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 11,
+                                weight: '600'
+                            },
+                            color: '#475569'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Quantidade de Estoque (un)',
+                            color: '#475569',
+                            font: {
+                                size: 10,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(226, 232, 240, 0.6)'
+                        },
+                        ticks: {
+                            color: '#64748b'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        min: 0,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Risco de Esgotamento (%)',
+                            color: '#ef4444',
+                            font: {
+                                size: 10,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            drawOnChartArea: false // Evita cruzar linhas de grade
+                        },
+                        ticks: {
+                            color: '#ef4444',
+                            callback: function(value) { return value + '%'; }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#64748b'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,524 @@
+{% extends 'base.html' %}
+
+{% block title %}Produtos - CAStock{% endblock %}
+{% block page_title %}Estoque de Produtos{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6" x-data="produtoFormHandler">
+    
+    <!-- Barra Superior: Busca, Filtros e Ações -->
+    <div class="glass-card shadow-glass rounded-3xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        
+        <!-- Formulário de Filtro -->
+        <form method="GET" action="{% url 'produtos' %}" class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <div class="relative flex items-center w-full sm:w-64">
+                <span class="absolute left-4 text-slate-500 text-sm">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" 
+                       name="search" 
+                       value="{{ search_query }}" 
+                       placeholder="Buscar por nome de produto..." 
+                       class="input input-bordered w-full pl-11 bg-white border-slate-350 text-slate-800 focus:border-burgundy-850 rounded-xl text-sm" />
+            </div>
+            
+            <select name="filtro_estoque" 
+                    onchange="this.form.submit()"
+                    class="select select-bordered bg-white border-slate-350 text-slate-800 focus:border-burgundy-850 rounded-xl text-sm w-full sm:w-44">
+                <option value="todos" {% if filtro_estoque == 'todos' %}selected{% endif %}>Todos os Níveis</option>
+                <option value="baixo" {% if filtro_estoque == 'baixo' %}selected{% endif %}>Estoque Baixo (&lt; 5 un)</option>
+                <option value="esgotado" {% if filtro_estoque == 'esgotado' %}selected{% endif %}>Esgotados</option>
+            </select>
+            
+            {% if search_query or filtro_estoque != 'todos' %}
+                <a href="{% url 'produtos' %}" class="btn btn-ghost border-slate-850 hover:bg-slate-800 rounded-xl text-slate-400 text-xs uppercase px-4 flex items-center justify-center">
+                    Limpar Filtros
+                </a>
+            {% endif %}
+        </form>
+
+        <!-- Botão Novo Produto -->
+        {% if is_admin_or_has_perm %}
+            <a href="{% url 'adicionar_produto' %}" class="btn btn-primary w-full md:w-auto rounded-xl text-white shadow-premium hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-plus-circle text-lg"></i> Adicionar Compra
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Tabela Principal de Produtos -->
+    <div class="glass-card shadow-glass rounded-3xl p-6">
+        <div class="overflow-x-auto w-full">
+            <table class="table table-zebra w-full text-slate-800">
+                <thead>
+                    <tr class="border-b border-slate-200 text-slate-600 text-xs uppercase tracking-wider">
+                        <th class="bg-transparent font-bold">Produto</th>
+                        <th class="bg-transparent font-bold text-center">Formato</th>
+                        <th class="bg-transparent font-bold text-center">Físico em Estoque</th>
+                        <th class="bg-transparent font-bold text-right">Custo Total</th>
+                        <th class="bg-transparent font-bold text-right">Custo Unitário</th>
+                        <th class="bg-transparent font-bold text-center">Margem</th>
+                        <th class="bg-transparent font-bold text-right">Venda Final</th>
+                        {% if is_admin_or_has_perm %}
+                            <th class="bg-transparent font-bold text-center w-24">Ações</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for produto in page_obj %}
+                        <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                            <!-- Nome -->
+                            <td class="bg-transparent">
+                                <span class="font-bold text-slate-800 text-base">{{ produto.nome }}</span>
+                            </td>
+                            
+                            <!-- Formato de Compra -->
+                            <td class="bg-transparent text-center">
+                                {% if produto.eh_caixa %}
+                                    <span class="badge badge-indigo bg-indigo-50 text-indigo-700 border-indigo-200 font-semibold text-xs py-2 px-3">
+                                        <i class="fa-solid fa-box text-[10px] mr-1"></i> Caixa ({{ produto.quantidade_por_caixa }} un)
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-neutral bg-slate-100 text-slate-600 border-slate-200 font-semibold text-xs py-2 px-3">
+                                        <i class="fa-solid fa-dolly text-[10px] mr-1"></i> Unitário
+                                    </span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Estoque Físico -->
+                            <td class="bg-transparent text-center">
+                                {% if produto.quantidade < 5 %}
+                                    <span class="badge badge-error bg-red-50 text-red-700 border-red-200 font-bold px-3 py-2 flex items-center justify-center gap-1.5 w-24 mx-auto">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
+                                        {{ produto.quantidade }} un
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-success bg-green-50 text-green-700 border-green-200 font-bold px-3 py-2 w-24 mx-auto">
+                                        {{ produto.quantidade }} un
+                                    </span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Custo Adquirido -->
+                            <td class="bg-transparent text-right font-mono text-slate-700">
+                                R$ {{ produto.valor_adquirido }}
+                            </td>
+                            
+                            <!-- Custo Unitário Calculado -->
+                            <td class="bg-transparent text-right font-mono text-indigo-700">
+                                R$ {{ produto.custo_unitario }}
+                            </td>
+                            
+                            <!-- Margem -->
+                            <td class="bg-transparent text-center text-slate-600 font-semibold text-sm">
+                                {{ produto.porcentagem_ganho }}%
+                            </td>
+                            
+                            <!-- Preço Venda Final -->
+                            <td class="bg-transparent text-right font-mono font-bold text-emerald-700">
+                                R$ {{ produto.valor_venda_final }}
+                            </td>
+                            
+                            <!-- Ações -->
+                            {% if is_admin_or_has_perm %}
+                                <td class="bg-transparent text-center">
+                                    <div class="flex justify-center gap-2">
+                                        <!-- Editar -->
+                                        {% if user.tipo_usuario == 'ADMIN' or user.permissoes.pode_editar_produto %}
+                                            <button @click="abrirCadastroEdicao({
+                                                id: '{{ produto.id }}',
+                                                nome: '{{ produto.nome }}',
+                                                quantidade_total: {{ produto.quantidade }},
+                                                valor_adquirido: '{{ produto.valor_adquirido }}',
+                                                porcentagem_ganho: '{{ produto.porcentagem_ganho }}',
+                                                valor_venda_final: '{{ produto.valor_venda_final }}',
+                                                eh_caixa: {% if produto.eh_caixa %}true{% else %}false{% endif %},
+                                                quantidade_por_caixa: {{ produto.quantidade_por_caixa|default:1 }},
+                                                data_compra: '{{ produto.data_compra|date:"Y-m-d\TH:i" }}'
+                                            })" 
+                                            class="btn btn-square btn-ghost btn-sm text-indigo-600 hover:bg-indigo-50" 
+                                            title="Editar Produto">
+                                                <i class="fa-solid fa-pen-to-square text-base"></i>
+                                            </button>
+                                        {% endif %}
+                                        
+                                        <!-- Excluir Lógico -->
+                                        {% if user.tipo_usuario == 'ADMIN' or user.permissoes.pode_excluir_produto %}
+                                            <form method="POST" action="{% url 'excluir_produto' produto.id %}" onsubmit="return confirm('Deseja realmente inativar este produto? Ele continuará no histórico de vendas.')" class="inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-square btn-ghost btn-sm text-red-600 hover:bg-red-50" title="Excluir Produto">
+                                                    <i class="fa-solid fa-trash-can text-base"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-12 text-slate-400">
+                                <i class="fa-solid fa-boxes-packing text-4xl mb-3 block"></i>
+                                Nenhum produto cadastrado no estoque ativo.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginação -->
+        {% if page_obj.has_other_pages %}
+            <div class="flex justify-center mt-6">
+                <div class="join border border-slate-200">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filtro_estoque %}&filtro_estoque={{ filtro_estoque }}{% endif %}" 
+                           class="join-item btn btn-sm bg-white text-slate-700 border-slate-200 hover:bg-slate-100">
+                            &laquo; Anterior
+                        </a>
+                    {% endif %}
+                    
+                    <span class="join-item btn btn-sm btn-disabled bg-slate-50 text-slate-400 border-slate-200">
+                        Pág {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filtro_estoque %}&filtro_estoque={{ filtro_estoque }}{% endif %}" 
+                           class="join-item btn btn-sm bg-white text-slate-700 border-slate-200 hover:bg-slate-100">
+                            Próximo &raquo;
+                        </a>
+                    {% endif %}
+        {% endif %}
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- Modal DaisyUI: Adicionar / Editar Compra de Produto -->
+    <!-- ===================================================================== -->
+    <dialog id="produto-modal" class="modal" :class="showModal && 'modal-open'">
+        <div class="modal-box bg-white border border-slate-200 max-w-lg shadow-premium text-slate-800">
+            <h3 class="font-bold text-lg text-slate-850 flex items-center gap-2 mb-6">
+                <i class="fa-solid fa-box-open text-burgundy-850"></i>
+                <span x-text="editMode ? 'Editar Detalhes do Produto' : 'Registrar Compra / Produto'"></span>
+            </h3>
+
+            <form method="POST" action="{% url 'produtos' %}" @submit.prevent="interceptFormSubmit" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="produto_id" :value="formData.id" />
+
+                <!-- Nome do Produto -->
+                <div class="form-control w-full">
+                    <label class="label pb-1">
+                        <span class="label-text text-slate-700 font-bold">Nome do Produto</span>
+                    </label>
+                    <input type="text" 
+                           name="nome" 
+                           required 
+                           x-model="formData.nome"
+                           placeholder="Ex: Coca-Cola Lata 350ml" 
+                           class="input input-bordered w-full bg-white border-slate-300 text-slate-800 focus:border-burgundy-850 focus:ring-1 focus:ring-burgundy-850 rounded-xl" />
+                </div>
+
+                <!-- Estoque Físico Atual (Visível APENAS em modo Edição) -->
+                <div class="form-control w-full bg-indigo-50/40 p-4 rounded-2xl border border-indigo-100/50" x-show="editMode">
+                    <label class="label pb-1 pt-0">
+                        <span class="label-text text-slate-850 font-extrabold flex items-center gap-1.5">
+                            <i class="fa-solid fa-boxes-stacked text-indigo-700"></i> Estoque Físico Atual (Unidades)
+                        </span>
+                    </label>
+                    <input type="number" 
+                           name="quantidade_estoque_atual" 
+                           min="0"
+                           x-model.number="formData.quantidade_total"
+                           class="input input-bordered w-full bg-white border-slate-350 text-slate-800 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 rounded-xl font-bold font-mono" />
+                    <span class="text-[11px] text-slate-500 mt-1.5 leading-relaxed block">
+                        *Ajuste este valor se a contagem física do estoque mudou (ex: após vendas ou auditoria).
+                    </span>
+                </div>
+
+                <!-- Toggle Caixa vs Unitário -->
+                <div class="form-control bg-slate-50 p-4 rounded-2xl flex flex-row items-center justify-between border border-slate-100">
+                    <div>
+                        <span class="font-bold text-slate-800 text-sm block">Compra em Caixa/Lote Fechado?</span>
+                        <span class="text-slate-500 text-xs">Ex: fardo com múltiplas unidades</span>
+                    </div>
+                    <input type="checkbox" 
+                           class="toggle toggle-primary" 
+                           x-model="formData.eh_caixa" />
+                    <!-- Envio do input oculto para compatibilidade com Django POST booleano -->
+                    <input type="hidden" name="eh_caixa" :value="formData.eh_caixa" />
+                </div>
+
+                <!-- Grade de Quantidades e Custos -->
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Qtd Adquirida (de caixas ou unidades) -->
+                    <div class="form-control w-full">
+                        <label class="label pb-1">
+                            <span class="label-text text-slate-700 font-bold" x-text="formData.eh_caixa ? 'Qtd de Caixas Adquiridas' : 'Quantidade Adquirida'">Quantidade</span>
+                        </label>
+                        <input type="number" 
+                               name="quantidade" 
+                               required 
+                               min="1"
+                               x-model.number="formData.quantidade"
+                               class="input input-bordered w-full bg-white border-slate-300 text-slate-800 focus:border-burgundy-850 rounded-xl" />
+                    </div>
+
+                    <!-- Qtd de Unidades por Caixa -->
+                    <div class="form-control w-full" x-show="formData.eh_caixa">
+                        <label class="label pb-1">
+                            <span class="label-text text-slate-700 font-bold">Unidades por Caixa</span>
+                        </label>
+                        <input type="number" 
+                               name="quantidade_por_caixa" 
+                               min="1"
+                               x-model.number="formData.quantidade_por_caixa"
+                               class="input input-bordered w-full bg-white border-slate-300 text-slate-800 focus:border-burgundy-850 rounded-xl" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Valor Total Adquirido (Custo de Compra) -->
+                    <div class="form-control w-full">
+                        <label class="label pb-1">
+                            <span class="label-text text-slate-700 font-bold" x-text="formData.eh_caixa ? 'Valor Pago na Caixa' : 'Valor Total do Lote'">Custo de Aquisição</span>
+                        </label>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-4 text-slate-500 text-sm">R$</span>
+                            <input type="number" 
+                                   name="valor_adquirido" 
+                                   step="0.01" 
+                                   required 
+                                   x-model.number="formData.valor_adquirido"
+                                   placeholder="0,00" 
+                                   class="input input-bordered w-full pl-10 bg-white border-slate-300 text-slate-800 focus:border-burgundy-850 rounded-xl" />
+                        </div>
+                    </div>
+
+                    <!-- Porcentagem de Ganho -->
+                    <div class="form-control w-full">
+                        <label class="label pb-1">
+                            <span class="label-text text-slate-700 font-bold">Porcentagem de Ganho</span>
+                        </label>
+                        <div class="relative flex items-center">
+                            <input type="number" 
+                                   name="porcentagem_ganho" 
+                                   step="0.01" 
+                                   required 
+                                   x-model.number="formData.porcentagem_ganho"
+                                   class="input input-bordered w-full pr-10 bg-white border-slate-300 text-slate-800 focus:border-burgundy-850 rounded-xl" />
+                            <span class="absolute right-4 text-slate-500 text-sm">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bloco de Cálculo em Tempo Real (UX Premium) -->
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-xs text-slate-550 font-semibold block uppercase">Custo Unitário:</span>
+                        <span class="text-lg font-bold text-indigo-700 font-mono">
+                            R$ <span x-text="formatarDinheiro(calcularCustoUnitario())">0,00</span>
+                        </span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-550 font-semibold block uppercase">Venda Sugerido:</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg font-bold text-emerald-700 font-mono">
+                                R$ <span x-text="formatarDinheiro(calcularPrecoSugerido())">0,00</span>
+                            </span>
+                            <button type="button" 
+                                    @click="aplicarPrecoSugerido"
+                                    class="badge badge-primary hover:scale-105 active:scale-95 transition-transform cursor-pointer border-none font-bold text-[10px] uppercase">
+                                Aplicar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Valor de Venda Efetivo / Final -->
+                    <div class="form-control w-full col-span-1">
+                        <label class="label pb-1">
+                            <span class="label-text text-slate-700 font-bold">Valor de Venda Final</span>
+                        </label>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-4 text-slate-500 text-sm">R$</span>
+                            <input type="number" 
+                                   name="valor_venda_final" 
+                                   step="0.01" 
+                                   required 
+                                   x-model.number="formData.valor_venda_final"
+                                   placeholder="0,00" 
+                                   class="input input-bordered w-full pl-10 bg-white border-slate-300 text-slate-800 focus:border-burgundy-850 rounded-xl" />
+                        </div>
+                    </div>
+
+                    <!-- Data da Compra -->
+                    <div class="form-control w-full col-span-1">
+                        <label class="label pb-1">
+                            <span class="label-text text-slate-700 font-bold">Data da Compra</span>
+                        </label>
+                        <input type="datetime-local" 
+                               name="data_compra" 
+                               x-model="formData.data_compra"
+                               class="input input-bordered w-full bg-white border-slate-300 text-slate-800 focus:border-burgundy-850 rounded-xl text-sm" />
+                    </div>
+                </div>
+
+                <!-- Botões de Ação do Form -->
+                <div class="modal-action">
+                    <button type="button" class="btn btn-ghost rounded-xl text-slate-550" @click="showModal = false">Cancelar</button>
+                    <button type="submit" class="btn btn-primary rounded-xl text-white px-6">
+                        Confirmar e Salvar <i class="fa-solid fa-circle-check"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <!-- ===================================================================== -->
+    <!-- Modal Impeditivo RF03: Confirmação de Verificação de Estoque Antigo -->
+    <!-- ===================================================================== -->
+    <dialog id="estoque-alerta-modal" class="modal" :class="showAlertaModal && 'modal-open'">
+        <div class="modal-box bg-white border border-slate-200 shadow-premium text-slate-800 max-w-md">
+            <h3 class="font-bold text-lg text-warning flex items-center gap-2 mb-4">
+                <i class="fa-solid fa-circle-exclamation text-2xl text-amber-500"></i> Confirmação de Lote Obrigatória
+            </h3>
+            
+            <p class="py-2 text-slate-650 leading-relaxed">
+                Antes de cadastrar uma nova compra de produto, é de extrema importância manter a fidelidade e controle de caixa.
+            </p>
+            
+            <div class="bg-amber-50 p-4 rounded-2xl border border-amber-100 my-4">
+                <span class="font-bold text-amber-700 text-sm block">Você verificou se ainda existe algum produto da compra anterior em estoque?</span>
+                <p class="text-xs text-slate-500 mt-1">Isso evita duplicidades ou erros nos cálculos de lucro histórico e auditorias de lotes anteriores.</p>
+            </div>
+            
+            <div class="form-control flex flex-row items-center gap-3 my-4">
+                <input type="checkbox" id="check-confirm" class="checkbox checkbox-primary" x-model="formData.verificado" />
+                <label for="check-confirm" class="label cursor-pointer text-slate-700 font-semibold text-sm">
+                    Sim, verifiquei fisicamente o estoque anterior!
+                </label>
+            </div>
+
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost rounded-xl text-slate-500" @click="showAlertaModal = false">Voltar e Conferir</button>
+                <button type="button" 
+                        class="btn btn-warning rounded-xl text-slate-900 font-bold" 
+                        :disabled="!formData.verificado"
+                        @click="confirmarAlertaEEnviar">
+                    Prosseguir com o Cadastro <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </dialog>
+</div>
+
+<!-- Alpine.js Formulário Handler -->
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('produtoFormHandler', () => ({
+            showModal: false,
+            showAlertaModal: false,
+            editMode: false,
+            formData: {
+                id: '',
+                nome: '',
+                quantidade: 1,
+                quantidade_total: 1,
+                valor_adquirido: 0,
+                porcentagem_ganho: {{ margem_global }},
+                valor_venda_final: 0,
+                eh_caixa: false,
+                quantidade_por_caixa: 1,
+                data_compra: '',
+                verificado: false
+            },
+
+            abrirCadastroNovo() {
+                this.editMode = false;
+                this.formData = {
+                    id: '',
+                    nome: '',
+                    quantidade: 1,
+                    quantidade_total: 1,
+                    valor_adquirido: 0,
+                    porcentagem_ganho: {{ margem_global }},
+                    valor_venda_final: 0,
+                    eh_caixa: false,
+                    quantidade_por_caixa: 30, // sugestão padrão para caixas
+                    data_compra: new Date().toISOString().slice(0, 16),
+                    verificado: false
+                };
+                this.showModal = true;
+            },
+
+            abrirCadastroEdicao(produto) {
+                this.editMode = true;
+                
+                // Trata possíveis strings com vírgula decimal de acordo com o locale do Django
+                const parseDecimal = (val) => {
+                    if (typeof val === 'string') {
+                        return parseFloat(val.replace(',', '.')) || 0;
+                    }
+                    return parseFloat(val) || 0;
+                };
+
+                this.formData = {
+                    id: produto.id,
+                    nome: produto.nome,
+                    quantidade: produto.eh_caixa ? Math.floor(produto.quantidade_total / produto.quantidade_por_caixa) : produto.quantidade_total,
+                    quantidade_total: produto.quantidade_total,
+                    valor_adquirido: parseDecimal(produto.valor_adquirido),
+                    porcentagem_ganho: parseDecimal(produto.porcentagem_ganho),
+                    valor_venda_final: parseDecimal(produto.valor_venda_final),
+                    eh_caixa: produto.eh_caixa,
+                    quantidade_por_caixa: produto.quantidade_por_caixa,
+                    data_compra: produto.data_compra,
+                    verificado: true // na edição não precisa bloquear, pois já existe
+                };
+                this.showModal = true;
+            },
+
+            calcularCustoUnitario() {
+                const total = parseFloat(this.formData.valor_adquirido) || 0;
+                if (this.formData.eh_caixa) {
+                    const un_por_caixa = parseInt(this.formData.quantidade_por_caixa) || 1;
+                    return total / un_por_caixa;
+                } else {
+                    const qtd = parseInt(this.formData.quantidade) || 0;
+                    return qtd > 0 ? total / qtd : total;
+                }
+            },
+
+            calcularPrecoSugerido() {
+                const custoUn = this.calcularCustoUnitario();
+                const margem = parseFloat(this.formData.porcentagem_ganho) || 0;
+                return custoUn * (1 + margem / 100);
+            },
+
+            aplicarPrecoSugerido() {
+                this.formData.valor_venda_final = parseFloat(this.calcularPrecoSugerido().toFixed(2));
+            },
+
+            formatarDinheiro(valor) {
+                return (parseFloat(valor) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            },
+
+            interceptFormSubmit(e) {
+                if (this.editMode || this.formData.verificado) {
+                    e.target.submit();
+                } else {
+                    this.showAlertaModal = true;
+                }
+            },
+
+            confirmarAlertaEEnviar() {
+                this.showAlertaModal = false;
+                const form = document.querySelector('#produto-modal form');
+                if (form) {
+                    form.submit();
+                }
+            }
+        }));
+    });
+</script>
+{% endblock %}

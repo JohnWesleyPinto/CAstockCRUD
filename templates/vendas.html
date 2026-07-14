@@ -1,0 +1,398 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Venda - CAStock{% endblock %}
+{% block page_title %}Registrar Venda / Retirada{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8" 
+     x-data="vendaCarrinhoHandler" 
+     @adicionar-item.window="adicionarAoCarrinho($event.detail)">
+    
+    <!-- Coluna Esquerda (2/3): Busca e Grade de Produtos -->
+    <div class="xl:col-span-2 space-y-6">
+        
+        <!-- Bloco de Pesquisa -->
+        <div class="glass-card shadow-premium rounded-3xl p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 w-full sm:w-auto">
+                <i class="fa-solid fa-boxes-stacked text-burgundy-800"></i> Produtos Disponíveis
+            </h2>
+            
+            <div class="form-control relative w-full sm:w-80">
+                <span class="absolute left-4 top-3 text-slate-400">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" 
+                       placeholder="Pesquisar por nome de produto..." 
+                       x-model="searchQuery"
+                       class="input input-bordered w-full pl-11 bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl text-sm" />
+            </div>
+        </div>
+
+        <!-- Grade de Produtos Reativa -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto pr-1 max-h-[680px]">
+            {% for produto in produtos %}
+                <!-- Card de Produto Individual -->
+                <div class="glass-card shadow-glass rounded-2xl p-4 hover:shadow-premium hover:border-burgundy-300 transition-all duration-300 cursor-pointer flex flex-col justify-between border border-slate-200 group"
+                     x-show="filtroProduto('{{ produto.nome|escapejs }}')"
+                     @click="adicionarAoCarrinho({
+                         id: '{{ produto.id }}',
+                         nome: '{{ produto.nome|escapejs }}',
+                         preco: {{ produto.valor_venda_final }},
+                         custoUnitario: {{ produto.custo_unitario }},
+                         qtdDisponivel: {{ produto.quantidade }}
+                     })">
+                    
+                    <div>
+                        <!-- Badge de Estoque -->
+                        <div class="flex justify-between items-start mb-2">
+                            {% if produto.quantidade < 5 %}
+                                <span class="badge badge-error bg-red-50 text-red-700 border-red-200 text-[9px] font-bold py-2 px-2.5 flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span> Crítico: {{ produto.quantidade }} un
+                                </span>
+                            {% else %}
+                                <span class="badge badge-success bg-green-50 text-green-700 border-green-200 text-[9px] font-bold py-2 px-2.5">
+                                    Estoque: {{ produto.quantidade }} un
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Nome do Produto -->
+                        <span class="font-bold text-slate-800 text-sm block leading-snug line-clamp-2 mt-1 group-hover:text-burgundy-800 transition-colors" title="{{ produto.nome }}">
+                            {{ produto.nome }}
+                        </span>
+                    </div>
+
+                    <!-- Preço e Ação -->
+                    <div class="flex justify-between items-baseline mt-5 pt-3 border-t border-slate-100">
+                        <span class="text-xs text-slate-400 font-semibold uppercase">Preço</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg font-black text-burgundy-800 font-mono">
+                                R$ {{ produto.valor_venda_final }}
+                            </span>
+                            <button type="button" class="btn btn-primary btn-square btn-xs rounded-lg bg-burgundy-800 hover:bg-burgundy-900 border-none w-7 h-7 flex items-center justify-center text-white">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-span-full py-16 text-center text-slate-400 glass-card rounded-3xl">
+                    <i class="fa-solid fa-boxes-packing text-5xl mb-4 block"></i>
+                    Nenhum produto cadastrado com estoque disponível para venda.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Coluna Direita (1/3): Carrinho de Vendas -->
+    <div class="xl:col-span-1">
+        <div class="glass-card shadow-premium rounded-3xl p-6 min-h-[580px] flex flex-col justify-between">
+            
+            <div>
+                <!-- Status de Sessão Administrativa rápida se autenticado -->
+                {% if user.is_authenticated %}
+                    <div class="alert bg-burgundy-50 border-burgundy-100 rounded-2xl mb-4 text-xs flex justify-between items-center py-2.5 px-3">
+                        <div class="flex items-center gap-2 text-burgundy-800 font-bold">
+                            <i class="fa-solid fa-circle-user text-sm"></i>
+                            <span>Operador: {{ user.username }}</span>
+                        </div>
+                        <a href="{% url 'logout' %}" class="btn btn-xs btn-outline border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-bold rounded-lg px-2 transition-all">
+                            <i class="fa-solid fa-power-off"></i> Sair
+                        </a>
+                    </div>
+                {% endif %}
+
+                <!-- Título Carrinho -->
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-cart-shopping text-burgundy-800"></i> Carrinho de Compras
+                    </h2>
+                    <button type="button" 
+                            @click="limparCarrinho" 
+                            x-show="carrinho.length > 0"
+                            class="btn btn-ghost btn-xs text-red-500 hover:bg-red-50 font-bold rounded-lg px-2">
+                        Limpar Tudo
+                    </button>
+                </div>
+
+                <!-- Lista de Itens do Carrinho -->
+                <div class="space-y-4 max-h-[360px] overflow-y-auto pr-1">
+                    <template x-for="(item, idx) in carrinho" :key="item.id">
+                        <div class="bg-slate-50 border border-slate-100 p-3 rounded-2xl relative flex flex-col justify-between gap-2.5">
+                            
+                            <!-- Botão de Excluir Item -->
+                            <button type="button" 
+                                    @click="removerItem(idx)"
+                                    class="absolute top-2.5 right-2.5 text-slate-400 hover:text-red-500 transition-colors">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                            <!-- Nome e Estoque -->
+                            <div>
+                                <span class="font-bold text-slate-800 text-sm block pr-6 line-clamp-1" x-text="item.nome"></span>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                                    Estoque: <span x-text="item.qtdDisponivel"></span> un
+                                </span>
+                            </div>
+
+                            <!-- Controles de Qtd e Preço -->
+                            <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/50">
+                                <!-- Controles Qtd -->
+                                <div class="join bg-white border border-slate-200 rounded-xl w-28">
+                                    <button type="button" 
+                                            @click="decrementarQtd(idx)"
+                                            class="join-item btn btn-xs bg-white hover:bg-slate-100 text-slate-600 font-bold border-none w-7">
+                                        -
+                                    </button>
+                                    <input type="number" 
+                                           min="1" 
+                                           :max="item.qtdDisponivel"
+                                           x-model.number="item.amount"
+                                           @input="validarQtdInput(idx)"
+                                           class="join-item input input-xs bg-white text-slate-800 text-center font-bold font-mono w-14 border-none focus:outline-none focus:ring-0" />
+                                    <button type="button" 
+                                            @click="incrementarQtd(idx)"
+                                            class="join-item btn btn-xs bg-white hover:bg-slate-100 text-slate-600 font-bold border-none w-7">
+                                        +
+                                    </button>
+                                </div>
+
+                                <!-- Preço e Subtotal -->
+                                <div class="text-right">
+                                    <div class="text-[10px] text-slate-400 font-semibold">Subtotal</div>
+                                    <span class="text-sm font-bold text-burgundy-800 font-mono">
+                                        R$ <span x-text="formatarDinheiro(item.preco * item.quantidade)">0,00</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Carrinho Vazio -->
+                    <div x-show="carrinho.length === 0" class="text-center py-20 text-slate-400">
+                        <i class="fa-solid fa-cart-arrow-down text-5xl mb-4 text-slate-300 block animate-bounce"></i>
+                        <p class="text-sm font-bold">Seu carrinho está vazio.</p>
+                        <p class="text-xs text-slate-400 mt-1">Toque em qualquer produto à esquerda para adicioná-lo aqui.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumo e Botão Finalizar -->
+            <div class="pt-6 border-t border-slate-200 mt-6 space-y-4" x-show="carrinho.length > 0" x-transition>
+                
+                <!-- Dados de Auditoria Interna (Exibido apenas para logados) -->
+                {% if user.is_authenticated %}
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-xs text-emerald-800 space-y-1">
+                        <div class="flex justify-between">
+                            <span>Preço de Custo Total:</span>
+                            <span class="font-bold font-mono">R$ <span x-text="formatarDinheiro(obterCustoTotal())">0,00</span></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Lucro Bruto Estimado:</span>
+                            <span class="font-bold font-mono">+ R$ <span x-text="formatarDinheiro(obterLucroEstimado())">0,00</span></span>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Valor Total Geral -->
+                <div class="flex justify-between items-baseline py-1">
+                    <span class="text-slate-800 font-bold text-sm">Valor Total Geral:</span>
+                    <span class="text-2xl font-black text-burgundy-800 font-mono">
+                        R$ <span x-text="formatarDinheiro(obterValorTotal())">0,00</span>
+                    </span>
+                </div>
+
+                <!-- Botão Checkout -->
+                <button type="button" 
+                        @click="showCheckoutModal = true"
+                        class="btn btn-primary w-full rounded-xl text-white shadow-premium hover:scale-[1.01] active:scale-[0.99] transition-all font-bold py-3.5 flex items-center justify-center gap-2">
+                    Finalizar Compra <i class="fa-solid fa-circle-check"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- Modal Pop-up de Checkout: Identificação e Forma de Pagamento -->
+    <!-- ===================================================================== -->
+    <dialog id="checkout-modal" class="modal" :class="showCheckoutModal && 'modal-open'">
+        <div class="modal-box bg-white border border-slate-250 shadow-premium max-w-md text-slate-800 rounded-3xl">
+            <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2 mb-4">
+                <i class="fa-solid fa-cash-register text-burgundy-800 text-2xl"></i> Finalizar Venda / Retirada
+            </h3>
+            
+            <p class="text-sm text-slate-400 mb-6">
+                Informe o nome do comprador e escolha a forma de pagamento nas opções abaixo para dar baixa no estoque.
+            </p>
+
+            <form id="checkout-form" method="POST" action="{% url 'registrar_venda' %}" class="space-y-5">
+                {% csrf_token %}
+
+                <!-- Envio Dinâmico de Produtos -->
+                <template x-for="(item, idx) in carrinho" :key="item.id">
+                    <div>
+                        <input type="hidden" name="produtos_ids[]" :value="item.id" />
+                        <input type="hidden" name="quantidades[]" :value="item.quantidade" />
+                        <input type="hidden" name="valores_venda[]" :value="item.preco" />
+                    </div>
+                </template>
+
+                <!-- Identificação do Comprador -->
+                <div class="form-control w-full">
+                    <label class="label py-1">
+                        <span class="label-text text-slate-600 font-semibold">Identificação do Comprador</span>
+                    </label>
+                    <input type="text" 
+                           name="nome_pessoa" 
+                           required 
+                           placeholder="Ex: Nome da pessoa ou balcão" 
+                           class="input input-bordered w-full bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl text-sm" />
+                </div>
+
+                <!-- Forma de Pagamento Visual (Cards de Seleção) -->
+                <div class="form-control w-full">
+                    <label class="label py-1">
+                        <span class="label-text text-slate-600 font-semibold">Forma de Pagamento</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Pix Card -->
+                        <div class="border rounded-2xl p-4 cursor-pointer text-center transition-all flex flex-col items-center justify-center gap-2 w-full"
+                             :class="formaPagamento === 2 ? 'border-burgundy-800 bg-burgundy-50 text-burgundy-800 shadow shadow-burgundy-800/10' : 'border-slate-200 hover:bg-slate-50 text-slate-500 bg-white'"
+                             @click="formaPagamento = 2">
+                            <i class="fa-solid fa-qrcode text-3xl"></i>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wider">Pix / Digital</span>
+                        </div>
+                        
+                        <!-- Caixinha Card -->
+                        <div class="border rounded-2xl p-4 cursor-pointer text-center transition-all flex flex-col items-center justify-center gap-2 w-full"
+                             :class="formaPagamento === 1 ? 'border-burgundy-800 bg-burgundy-50 text-burgundy-800 shadow shadow-burgundy-800/10' : 'border-slate-200 hover:bg-slate-50 text-slate-500 bg-white'"
+                             @click="formaPagamento = 1">
+                            <i class="fa-solid fa-money-bill-wave text-3xl"></i>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wider">Caixinha / Dinheiro</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Input Oculto Realmente Enviado no Formulário -->
+                    <input type="hidden" name="forma_pagamento" :value="formaPagamento" />
+                </div>
+
+                <!-- Resumo Total no Modal -->
+                <div class="bg-slate-50 rounded-2xl p-4 mt-6 flex justify-between items-center">
+                    <span class="text-xs text-slate-500 font-bold uppercase">Total a pagar:</span>
+                    <span class="text-xl font-black text-burgundy-800 font-mono">
+                        R$ <span x-text="formatarDinheiro(obterValorTotal())">0,00</span>
+                    </span>
+                </div>
+
+                <!-- Botões de Ação do Checkout -->
+                <div class="modal-action mt-6 border-t border-slate-100 pt-4 flex justify-between">
+                    <button type="button" class="btn btn-ghost rounded-xl text-slate-400" @click="showCheckoutModal = false">Voltar</button>
+                    <button type="submit" class="btn btn-primary rounded-xl text-white px-6 font-bold shadow-premium">
+                        Confirmar e Concluir <i class="fa-solid fa-circle-check"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+</div>
+
+<!-- Script Alpine.js para Gestão Completa de PDV -->
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('vendaCarrinhoHandler', () => ({
+            carrinho: [],
+            searchQuery: '',
+            showCheckoutModal: false,
+            formaPagamento: 2, // Padrão Pix
+
+            filtroProduto(nome) {
+                if (!this.searchQuery) return true;
+                return nome.toLowerCase().includes(this.searchQuery.toLowerCase());
+            },
+
+            adicionarAoCarrinho(produto) {
+                // Verificar se o item já está no carrinho
+                const idx = this.carrinho.findIndex(item => item.id === produto.id);
+                if (idx !== -1) {
+                    if (this.carrinho[idx].quantidade < produto.qtdDisponivel) {
+                        this.carrinho[idx].quantidade++;
+                        this.carrinho[idx].amount = this.carrinho[idx].quantidade;
+                    } else {
+                        alert("A quantidade selecionada atinge o limite disponível no estoque físico!");
+                    }
+                } else {
+                    // Adiciona novo item
+                    this.carrinho.push({
+                        id: produto.id,
+                        nome: produto.nome,
+                        preco: parseFloat(produto.preco) || 0,
+                        custoUnitario: parseFloat(produto.custoUnitario) || 0,
+                        qtdDisponivel: parseInt(produto.qtdDisponivel) || 0,
+                        quantidade: 1,
+                        amount: 1
+                    });
+                }
+            },
+
+            removerItem(idx) {
+                this.carrinho.splice(idx, 1);
+            },
+
+            limparCarrinho() {
+                this.carrinho = [];
+            },
+
+            incrementarQtd(idx) {
+                const item = this.carrinho[idx];
+                if (item.quantidade < item.qtdDisponivel) {
+                    item.quantidade++;
+                    item.amount = item.quantidade;
+                }
+            },
+
+            decrementarQtd(idx) {
+                const item = this.carrinho[idx];
+                if (item.quantidade > 1) {
+                    item.quantidade--;
+                    item.amount = item.quantidade;
+                }
+            },
+
+            validarQtdInput(idx) {
+                const item = this.carrinho[idx];
+                const inputVal = parseInt(item.amount) || 1;
+                
+                if (inputVal < 1) {
+                    item.quantidade = 1;
+                } else if (inputVal > item.qtdDisponivel) {
+                    item.quantidade = item.qtdDisponivel;
+                } else {
+                    item.quantidade = inputVal;
+                }
+                item.amount = item.quantidade;
+            },
+
+            obterTotalQtd() {
+                return this.carrinho.reduce((acc, item) => acc + item.quantidade, 0);
+            },
+
+            obterCustoTotal() {
+                return this.carrinho.reduce((acc, item) => acc + (item.custoUnitario * item.quantidade), 0);
+            },
+
+            obterValorTotal() {
+                return this.carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+            },
+
+            obterLucroEstimado() {
+                return this.obterValorTotal() - this.obterCustoTotal();
+            },
+
+            formatarDinheiro(valor) {
+                return (parseFloat(valor) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+        }));
+    });
+</script>
+{% endblock %}

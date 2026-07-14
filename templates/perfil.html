@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}Meu Perfil - CAStock{% endblock %}
+{% block page_title %}Perfil do Usuário{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-data="profileHandler">
+    
+    <!-- Coluna Esquerda: Avatar e Info de Acesso -->
+    <div class="lg:col-span-1 space-y-6">
+        <div class="glass-card shadow-premium rounded-3xl p-6 text-center">
+            
+            <!-- Preview do Avatar -->
+            <div class="relative w-36 h-36 mx-auto mb-6">
+                {% if user.foto %}
+                    <img src="{{ user.foto.url }}" alt="Foto de Perfil" class="w-full h-full object-cover rounded-full ring-4 ring-burgundy-800 ring-offset-4 shadow-md" />
+                {% else %}
+                    <div class="w-full h-full rounded-full bg-burgundy-100 ring-4 ring-burgundy-800 ring-offset-4 flex items-center justify-center text-burgundy-800 shadow-md">
+                        <span class="text-5xl font-extrabold uppercase">{{ user.username|slice:":1" }}</span>
+                    </div>
+                {% endif %}
+                
+                <!-- Badge Operacional -->
+                <span class="absolute bottom-1 right-1 badge badge-primary font-bold py-2.5 px-3 rounded-xl shadow border-none text-[10px] uppercase">
+                    {% if user.tipo_usuario == 'ADMIN' %}Admin{% else %}Operador{% endif %}
+                </span>
+            </div>
+
+            <h3 class="text-xl font-bold text-slate-800">{{ user.username }}</h3>
+            <p class="text-xs text-slate-400 font-medium uppercase mt-0.5 tracking-wider">
+                {% if user.tipo_usuario == 'ADMIN' %}Administrador do Sistema{% else %}Membro Operacional{% endif %}
+            </p>
+            
+            <div class="divider border-slate-200 my-4"></div>
+
+            <div class="text-left space-y-2.5 text-sm text-slate-500">
+                <div class="flex justify-between">
+                    <span>Membro desde:</span>
+                    <span class="font-bold text-slate-700">{{ user.date_joined|date:"d/m/Y" }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Último Login:</span>
+                    <span class="font-bold text-slate-700">{{ user.last_login|date:"d/m/Y H:i" }}</span>
+                </div>
+            </div>
+
+            <!-- Botão de Alterar Senha (Gatilho para o Pop-up) -->
+            <button @click="showPasswordModal = true" class="btn btn-outline border-burgundy-800 text-burgundy-800 hover:bg-burgundy-800 hover:border-burgundy-800 hover:text-white w-full mt-6 rounded-xl transition-all font-bold">
+                <i class="fa-solid fa-key"></i> Alterar Senha de Acesso
+            </button>
+        </div>
+    </div>
+
+    <!-- Coluna Direita: Formulário de Atualização -->
+    <div class="lg:col-span-2">
+        <div class="glass-card shadow-premium rounded-3xl p-8">
+            <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2 mb-6 border-b border-slate-200/60 pb-4">
+                <i class="fa-solid fa-address-card text-burgundy-800"></i> Informações Cadastrais
+            </h2>
+
+            <form method="POST" action="{% url 'perfil' %}" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Primeiro Nome -->
+                    <div class="form-control w-full">
+                        <label class="label">
+                            <span class="label-text text-slate-600 font-semibold">Nome</span>
+                        </label>
+                        <input type="text" 
+                               name="first_name" 
+                               value="{{ user.first_name }}"
+                               placeholder="Digite seu nome" 
+                               class="input input-bordered w-full bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl" />
+                    </div>
+
+                    <!-- Sobrenome -->
+                    <div class="form-control w-full">
+                        <label class="label">
+                            <span class="label-text text-slate-600 font-semibold">Sobrenome</span>
+                        </label>
+                        <input type="text" 
+                               name="last_name" 
+                               value="{{ user.last_name }}"
+                               placeholder="Digite seu sobrenome" 
+                               class="input input-bordered w-full bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl" />
+                    </div>
+                </div>
+
+                <!-- E-mail -->
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text text-slate-600 font-semibold">Endereço de E-mail</span>
+                    </label>
+                    <input type="email" 
+                           name="email" 
+                           value="{{ user.email }}"
+                           required
+                           placeholder="seuemail@exemplo.com" 
+                           class="input input-bordered w-full bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl" />
+                </div>
+
+                <!-- Upload de Foto de Perfil -->
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text text-slate-600 font-semibold">Foto de Perfil / Avatar</span>
+                    </label>
+                    <input type="file" 
+                           name="foto" 
+                           accept="image/*"
+                           class="file-input file-input-bordered file-input-primary w-full bg-white border-slate-200 text-slate-800 focus:outline-none focus:border-burgundy-800 rounded-xl" />
+                    <span class="label-text-alt text-slate-400 mt-1">Formatos aceitos: JPG, PNG, GIF. Tamanho máximo sugerido: 2MB.</span>
+                </div>
+
+                <!-- Botão de Enviar Cadastro -->
+                <div class="flex justify-end pt-4 border-t border-slate-200/60 mt-6">
+                    <button type="submit" class="btn btn-primary px-8 rounded-xl text-white shadow-premium">
+                        Salvar Alterações <i class="fa-solid fa-circle-check"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- Modal Pop-up: Alteração de Senha Segura (Confirmação via Pop-up) -->
+    <!-- ===================================================================== -->
+    <dialog id="password-modal" class="modal" :class="showPasswordModal && 'modal-open'">
+        <div class="modal-box bg-white border border-slate-250 shadow-premium max-w-md text-slate-800 rounded-3xl">
+            <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2 mb-4">
+                <i class="fa-solid fa-shield-halved text-burgundy-800 text-2xl"></i> Alteração de Senha Segura
+            </h3>
+            
+            <p class="text-sm text-slate-500 mb-6 leading-relaxed">
+                Por motivos de segurança, você precisará confirmar sua **senha atual** para aplicar a nova senha de acesso.
+            </p>
+
+            <form method="POST" action="{% url 'alterar_senha' %}" class="space-y-4">
+                {% csrf_token %}
+
+                <!-- Senha Atual -->
+                <div class="form-control w-full">
+                    <label class="label py-1">
+                        <span class="label-text text-slate-600 font-semibold">Senha Atual</span>
+                    </label>
+                    <input type="password" 
+                           name="senha_atual" 
+                           required 
+                           placeholder="Digite sua senha atual" 
+                           class="input input-bordered w-full bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl text-sm" />
+                </div>
+
+                <!-- Nova Senha -->
+                <div class="form-control w-full">
+                    <label class="label py-1">
+                        <span class="label-text text-slate-600 font-semibold">Nova Senha</span>
+                    </label>
+                    <input type="password" 
+                           name="nova_senha" 
+                           required 
+                           placeholder="Digite a nova senha desejada" 
+                           class="input input-bordered w-full bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl text-sm" />
+                </div>
+
+                <!-- Confirmar Nova Senha -->
+                <div class="form-control w-full">
+                    <label class="label py-1">
+                        <span class="label-text text-slate-600 font-semibold">Confirmar Nova Senha</span>
+                    </label>
+                    <input type="password" 
+                           name="nova_senha_confirm" 
+                           required 
+                           placeholder="Confirme a nova senha" 
+                           class="input input-bordered w-full bg-white border-slate-200 text-slate-800 focus:border-burgundy-800 focus:ring-1 focus:ring-burgundy-800 rounded-xl text-sm" />
+                </div>
+
+                <!-- Botões de Ação do Pop-up -->
+                <div class="modal-action mt-6 border-t border-slate-100 pt-4">
+                    <button type="button" class="btn btn-ghost rounded-xl text-slate-400" @click="showPasswordModal = false">Cancelar</button>
+                    <button type="submit" class="btn btn-primary rounded-xl text-white px-6">
+                        Confirmar e Alterar <i class="fa-solid fa-lock"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+</div>
+
+<!-- Alpine.js Handler para Modal -->
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('profileHandler', () => ({
+            showPasswordModal: false
+        }));
+    });
+</script>
+{% endblock %}

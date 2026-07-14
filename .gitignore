@@ -1,0 +1,29 @@
+# Graphify
+graphify-out/
+
+# Python cache and temporary files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# Databases
+db.sqlite3
+
+# Logs
+*.log
+logs/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo

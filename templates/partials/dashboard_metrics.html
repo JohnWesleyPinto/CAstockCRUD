@@ -1,0 +1,200 @@
+<div class="space-y-8 animate-fade-in">
+    
+    <!-- 1. Grid de Estatísticas Gerais (KPIs) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Faturamento Total -->
+        <div class="glass-card shadow-glass rounded-3xl p-6 border-l-4 border-l-indigo-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <span class="text-xs text-slate-500 font-bold uppercase tracking-wider block">Faturamento bruto</span>
+                    <span class="text-2xl font-black text-slate-800 font-mono block mt-1">
+                        R$ {{ faturamento|floatformat:2 }}
+                    </span>
+                </div>
+                <div class="w-12 h-12 bg-indigo-50 text-indigo-750 border border-indigo-200 rounded-2xl flex items-center justify-center text-xl shadow-inner">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+            </div>
+            <span class="text-[10px] text-slate-550 font-semibold uppercase tracking-wider block mt-4">
+                Total faturado no período
+            </span>
+        </div>
+        
+        <!-- Lucro Líquido -->
+        <div class="glass-card shadow-glass rounded-3xl p-6 border-l-4 border-l-emerald-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <span class="text-xs text-slate-550 font-bold uppercase tracking-wider block">Lucro Líquido</span>
+                    <span class="text-2xl font-black text-emerald-700 font-mono block mt-1">
+                        R$ {{ lucro|floatformat:2 }}
+                    </span>
+                </div>
+                <div class="w-12 h-12 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-2xl flex items-center justify-center text-xl shadow-inner">
+                    <i class="fa-solid fa-money-bill-trend-up"></i>
+                </div>
+            </div>
+            <span class="text-[10px] text-slate-550 font-semibold uppercase tracking-wider block mt-4">
+                Retorno financeiro real
+            </span>
+        </div>
+
+        <!-- Itens Físicos em Estoque -->
+        <div class="glass-card shadow-glass rounded-3xl p-6 border-l-4 border-l-amber-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <span class="text-xs text-slate-550 font-bold uppercase tracking-wider block">Unidades em Estoque</span>
+                    <span class="text-2xl font-black text-slate-800 font-mono block mt-1">
+                        {{ quantidade_itens_estoque }} un
+                    </span>
+                </div>
+                <div class="w-12 h-12 bg-amber-50 text-amber-700 border border-amber-200 rounded-2xl flex items-center justify-center text-xl shadow-inner">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+            </div>
+            <span class="text-[10px] text-slate-550 font-semibold uppercase tracking-wider block mt-4">
+                Total de itens físicos hoje
+            </span>
+        </div>
+
+        <!-- Valor Estimado de Venda do Estoque -->
+        <div class="glass-card shadow-glass rounded-3xl p-6 border-l-4 border-l-purple-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <span class="text-xs text-slate-550 font-bold uppercase tracking-wider block">Patrimônio em Estoque</span>
+                    <span class="text-2xl font-black text-purple-700 font-mono block mt-1">
+                        R$ {{ valor_estimado_estoque|floatformat:2 }}
+                    </span>
+                </div>
+                <div class="w-12 h-12 bg-purple-50 text-purple-700 border border-purple-200 rounded-2xl flex items-center justify-center text-xl shadow-inner">
+                    <i class="fa-solid fa-sack-dollar"></i>
+                </div>
+            </div>
+            <span class="text-[10px] text-slate-550 font-semibold uppercase tracking-wider block mt-4">
+                Valor estimado de venda final
+            </span>
+        </div>
+    </div>
+    
+    <!-- 2. Grid de Análises Detalhadas -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Métricas por Meios de Pagamento -->
+        <div class="glass-card shadow-glass rounded-3xl p-6 flex flex-col justify-between">
+            <div>
+                <h3 class="text-lg font-bold text-slate-850 flex items-center gap-2 mb-6">
+                    <i class="fa-solid fa-credit-card text-indigo-500"></i> Meios de Pagamento
+                </h3>
+                
+                <div class="space-y-6">
+                    <!-- PIX -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-baseline">
+                            <span class="font-bold text-slate-800 text-sm">Pix</span>
+                            <span class="font-mono text-indigo-700 text-xs">Fat: R$ {{ faturamento_pix|floatformat:2 }}</span>
+                        </div>
+                        <progress class="progress progress-primary w-full" value="{{ faturamento_pix }}" max="{{ faturamento|default:1 }}"></progress>
+                        <div class="flex justify-between text-[10px] text-slate-550 font-semibold uppercase">
+                            <span>Lucro Real</span>
+                            <span class="text-emerald-700 font-bold">R$ {{ lucro_pix|floatformat:2 }}</span>
+                        </div>
+                    </div>
+
+                    <!-- CAIXINHA -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-baseline">
+                            <span class="font-bold text-slate-800 text-sm">Caixinha</span>
+                            <span class="font-mono text-indigo-700 text-xs">Fat: R$ {{ faturamento_caixinha|floatformat:2 }}</span>
+                        </div>
+                        <progress class="progress progress-secondary w-full" value="{{ faturamento_caixinha }}" max="{{ faturamento|default:1 }}"></progress>
+                        <div class="flex justify-between text-[10px] text-slate-550 font-semibold uppercase">
+                            <span>Lucro Real</span>
+                            <span class="text-emerald-700 font-bold">R$ {{ lucro_caixinha|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Totalização de Lucro Geral do Período -->
+            <div class="p-4 bg-slate-100/50 rounded-2xl border border-slate-200 text-center mt-6">
+                <span class="text-[10px] text-slate-550 font-bold uppercase tracking-wider block">Somatório Geral de Lucro</span>
+                <span class="text-3xl font-black text-emerald-700 font-mono block mt-1">
+                    R$ {{ lucro|floatformat:2 }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Produtos Mais Vendidos -->
+        <div class="glass-card shadow-glass rounded-3xl p-6">
+            <h3 class="text-lg font-bold text-slate-850 flex items-center gap-2 mb-6">
+                <i class="fa-solid fa-fire text-amber-500"></i> Produtos Mais Vendidos
+            </h3>
+
+            <div class="overflow-x-auto w-full">
+                <table class="table table-xs w-full text-slate-800">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-slate-650 text-[10px] uppercase">
+                            <th class="bg-transparent font-bold">Produto</th>
+                            <th class="bg-transparent font-bold text-center w-24">Vendas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in mais_vendidos %}
+                            <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                                <td class="bg-transparent font-semibold py-3">{{ item.produto__nome }}</td>
+                                <td class="bg-transparent text-center py-3">
+                                    <span class="badge badge-primary bg-indigo-50 text-indigo-750 border-indigo-200 font-bold px-2.5 py-1 text-xs">
+                                        {{ item.total_vendido }} un
+                                    </span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center py-8 text-slate-500 text-xs">
+                                    Nenhuma venda realizada no período.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Alertas de Reposição Crítica -->
+        <div class="glass-card shadow-glass rounded-3xl p-6">
+            <h3 class="text-lg font-bold text-slate-850 flex items-center gap-2 mb-6">
+                <i class="fa-solid fa-triangle-exclamation text-red-500"></i> Alertas de Reposição
+            </h3>
+
+            <div class="overflow-x-auto w-full">
+                <table class="table table-xs w-full text-slate-800">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-slate-650 text-[10px] uppercase">
+                            <th class="bg-transparent font-bold">Produto</th>
+                            <th class="bg-transparent font-bold text-center w-24">Qtd Física</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for produto in estoque_critico %}
+                            <tr class="border-b border-slate-200 hover:bg-red-50/50 transition-colors">
+                                <td class="bg-transparent font-semibold text-red-700 py-3">{{ produto.nome }}</td>
+                                <td class="bg-transparent text-center py-3">
+                                    <span class="badge badge-error bg-red-50 text-red-700 border-red-200 font-black px-2.5 py-1 text-xs">
+                                        {{ produto.quantidade }} un
+                                    </span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center py-8 text-emerald-700 text-xs font-semibold">
+                                    <i class="fa-solid fa-circle-check block text-xl mb-1 text-emerald-600"></i>
+                                    Estoque totalmente saudável!
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
