@@ -59,6 +59,7 @@ DB_USER = config('DB_USER', default='')
 DB_PASSWORD = config('DB_PASSWORD', default='')
 DB_HOST = config('DB_HOST', default='localhost')
 DB_PORT = config('DB_PORT', default='5432')
+DATABASE_URL = config('DATABASE_URL', default='')
 
 def garantir_banco_postgres_existe(name, user, password, host, port):
     import psycopg2
@@ -98,7 +99,20 @@ def garantir_banco_postgres_existe(name, user, password, host, port):
         else:
             print(f"\n[PostgreSQL] Erro de conexão (sem ser banco inexistente): {e}")
 
-if DB_NAME and DB_USER:
+if DATABASE_URL:
+    import urllib.parse as urlparse
+    url = urlparse.urlparse(DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': url.path[1:],
+            'USER': url.username,
+            'PASSWORD': url.password,
+            'HOST': url.hostname,
+            'PORT': url.port or 5432,
+        }
+    }
+elif DB_NAME and DB_USER:
     # Tenta criar o banco caso não exista antes do Django inicializar
     garantir_banco_postgres_existe(DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
     
