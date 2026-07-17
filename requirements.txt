@@ -3,3 +3,4 @@ argon2-cffi
 django-decouple
 psycopg2-binary
 google-generativeai
+gunicorn
