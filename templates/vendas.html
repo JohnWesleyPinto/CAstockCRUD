@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load l10n %}
 
 {% block title %}Registrar Venda - CAStock{% endblock %}
 {% block page_title %}Registrar Venda / Retirada{% endblock %}
@@ -37,8 +38,8 @@
                      @click="adicionarAoCarrinho({
                          id: '{{ produto.id }}',
                          nome: '{{ produto.nome|escapejs }}',
-                         preco: {{ produto.valor_venda_final }},
-                         custoUnitario: {{ produto.custo_unitario }},
+                         preco: {{ produto.valor_venda_final|unlocalize }},
+                         custoUnitario: {{ produto.custo_unitario|unlocalize }},
                          qtdDisponivel: {{ produto.quantidade }}
                      })">
                     

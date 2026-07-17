@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load l10n %}
 
 {% block title %}Previsão Inteligente de Estoque - CAStock{% endblock %}
 
@@ -129,23 +130,23 @@
                         <!-- Linha Estado 0 (Nenhuma) -->
                         <tr class="border-b border-slate-50">
                             <td class="text-xs font-semibold text-slate-500 bg-slate-50/50 uppercase">Nenhuma</td>
-                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.0.0 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.0.0 }}%</td>
-                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.0.1 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.0.1 }}%</td>
-                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.0.2 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.0.2 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.0.0|unlocalize }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.0.0 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.0.1|unlocalize }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.0.1 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.0.2|unlocalize }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.0.2 }}%</td>
                         </tr>
                         <!-- Linha Estado 1 (Baixa) -->
                         <tr class="border-b border-slate-50">
                             <td class="text-xs font-semibold text-slate-500 bg-slate-50/50 uppercase">Baixa</td>
-                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.1.0 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.1.0 }}%</td>
-                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.1.1 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.1.1 }}%</td>
-                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.1.2 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.1.2 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.1.0|unlocalize }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.1.0 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.1.1|unlocalize }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.1.1 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.1.2|unlocalize }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.1.2 }}%</td>
                         </tr>
                         <!-- Linha Estado 2 (Alta) -->
                         <tr class="border-b border-slate-50">
                             <td class="text-xs font-semibold text-slate-500 bg-slate-50/50 uppercase">Alta</td>
-                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.2.0 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.2.0 }}%</td>
-                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.2.1 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.2.1 }}%</td>
-                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.2.2 }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.2.2 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.2.0|unlocalize }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.2.0 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.2.1|unlocalize }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.2.1 }}%</td>
+                            <td style="background-color: rgba(128,0,32, {{ resultado.tpm.2.2|unlocalize }})" class="text-slate-800 p-3 rounded-lg">{{ resultado.tpm_percent.2.2 }}%</td>
                         </tr>
                     </tbody>
                 </table>
