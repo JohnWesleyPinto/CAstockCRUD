@@ -4,6 +4,8 @@
 
 O projeto foi inteiramente desenhado para o **Light Mode (Tema Claro)** nativo de alto contraste, garantindo excelente legibilidade e usabilidade profissional.
 
+🔗 **Link do site funcionando:** [https://castock-api.onrender.com](https://castock-api.onrender.com)
+
 ---
 
 ## 🚀 Principais Funcionalidades
